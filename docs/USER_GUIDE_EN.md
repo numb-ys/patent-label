@@ -1,6 +1,6 @@
 # PatentLabel English user guide
 
-English preview release 0.3.1. For Windows full AutoCAD 2014, 2019 or 2026.
+English preview release 0.3.2. For Windows full AutoCAD 2014, 2019 or 2026.
 Use the ZIP built for your exact AutoCAD year. AutoCAD LT, macOS and other CAD products are not supported by these packages.
 
 ## Install once
@@ -28,6 +28,7 @@ Labels contain 1-32 ASCII letters or digits. Examples: 123, A, a, A01 and 12A. T
 
 ## Edit labels and settings
 
+- Move with the mouse: click the callout to select it, then drag the blue grip at the label center. The whole leader previews continuously and the point on the part stays fixed. Click the new position to finish, or press Esc to cancel. No command is needed. One Undo restores the label and leader together.
 - BHXG: select a callout, type its replacement label at the command line and confirm. The leader gap is recalculated. A copied callout can be edited independently.
 - BHYD: select a callout, move the mouse to preview the whole leader, then click the new label center. The target on the part stays fixed. Esc cancels the move.
 - BHSZ: set label height, horizontal landing length, text gap, confirmation key and weight. Press Enter at a setting to keep its value. New English labels use Arial Regular by default.
@@ -36,7 +37,7 @@ Labels contain 1-32 ASCII letters or digits. Examples: 123, A, a, A01 and 12A. T
 - BHHELP: display command help.
 - Esc cancels the current operation. At the first or second point prompt, Enter finishes or cancels the callout. Use U or Ctrl+Z to undo a completed operation.
 
-Double-clicking a label uses AutoCAD's built-in attribute editor. Finish with its normal OK/Close action; the leader gap then updates. Moving the NUMBER attribute grip updates the leader when that native command finishes. Use BHYD to see the leader follow during the move. Moving the whole block moves the whole callout. Existing PatentLabel blocks are supported; exploded objects are not linked. These features require the matching managed DLL to be loaded.
+Double-clicking a label uses AutoCAD's built-in attribute editor. Finish with its normal OK/Close action; the leader gap then updates. The MOVE command moves the whole callout. Existing PatentLabel blocks are supported; exploded objects are not linked. These features require the matching managed DLL. If no blue grip appears, check that AutoCAD's GRIPS setting is enabled.
 
 ## Troubleshooting and removal
 

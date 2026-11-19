@@ -19,6 +19,9 @@ internal static class LabelAttachment
         internal Matrix3d Transform;
         internal string Number = "";
         internal ObjectId Style;
+        internal ObjectId Layer;
+        internal int LineColor, TextColor;
+        internal LineWeight LineWeight;
         internal double Height, Width, WidthFactor, Landing, Gap;
         internal Point3d WorldTip => Tip.TransformBy(Transform);
     }
@@ -27,7 +30,12 @@ internal static class LabelAttachment
     {
         if (id.IsNull || !id.IsValid || id.IsErased) return null;
         var obj = tr.GetObject(id, OpenMode.ForRead, false);
-        if (obj is AttributeReference) obj = tr.GetObject(obj.OwnerId, OpenMode.ForRead, false);
+        if (obj is AttributeReference)
+        {
+            var owner = obj.OwnerId;
+            if (owner.IsNull || !owner.IsValid || owner.IsErased) return null;
+            obj = tr.GetObject(owner, OpenMode.ForRead, false);
+        }
         if (!(obj is BlockReference block) || block.IsDynamicBlock) return null;
         using var data = block.GetXDataForApplication("PATENT_LABEL");
         if (data is null) return null;
@@ -66,23 +74,37 @@ internal static class LabelAttachment
             Block = block.ObjectId, Attribute = attribute.ObjectId, Line = line.ObjectId,
             Tip = tip, Center = new Point3d(center.X, center.Y, 0), Transform = block.BlockTransform,
             Number = attribute.TextString, Style = attribute.TextStyleId,
+            Layer = block.LayerId, LineColor = line.ColorIndex, TextColor = attribute.ColorIndex, LineWeight = line.LineWeight,
             Height = local.Height, WidthFactor = local.WidthFactor, Width = Math.Max(local.Height * .15, extents.MaxPoint.X - extents.MinPoint.X),
             Landing = Convert.ToDouble(values[4].Value), Gap = Convert.ToDouble(values[5].Value)
         };
     }
 
-    internal static Point2d[] Vertices(Snapshot state)
+    internal static Point2d[] Vertices(Snapshot state, Point3d? centerOverride = null)
     {
-        var dx = state.Tip.X - state.Center.X;
+        var center = centerOverride ?? state.Center;
+        var dx = state.Tip.X - center.X;
         var side = dx < 0 ? -1.0 : 1.0;
         var end = side * (state.Width / 2 + state.Gap);
         var reach = Math.Abs(dx) - (state.Width / 2 + state.Gap);
         var elbow = end + side * (reach > 0 ? Math.Min(state.Landing, reach) : state.Landing);
         return new[] {
             new Point2d(state.Tip.X, state.Tip.Y),
-            new Point2d(state.Center.X + elbow, state.Center.Y),
-            new Point2d(state.Center.X + end, state.Center.Y)
+            new Point2d(center.X + elbow, center.Y),
+            new Point2d(center.X + end, center.Y)
         };
+    }
+
+    internal static void MoveCenter(Database db, Transaction tr, ObjectId id, Point3d worldCenter)
+    {
+        var state = Read(db, tr, id);
+        if (state is null) throw new InvalidOperationException("Callout is not editable.");
+        var local = worldCenter.TransformBy(state.Transform.Inverse());
+        var center = new Point3d(local.X, local.Y, 0).TransformBy(state.Transform);
+        var attribute = (AttributeReference)tr.GetObject(state.Attribute, OpenMode.ForWrite);
+        attribute.TransformBy(Matrix3d.Displacement(center - state.Center.TransformBy(state.Transform)));
+        attribute.AdjustAlignment(db);
+        Synchronize(db, tr, id);
     }
 
     internal static bool Synchronize(Database db, Transaction tr, ObjectId id)
@@ -113,11 +135,12 @@ internal static class LabelAttachment
                 attributeDefinition.Position = state.Center;
                 attributeDefinition.AlignmentPoint = state.Center;
                 attributeDefinition.Height = state.Height;
+                attributeDefinition.WidthFactor = state.WidthFactor;
                 attributeDefinition.TextStyleId = state.Style;
                 attributeDefinition.TextString = state.Number;
             }
         }
-        block.UpgradeOpen();
+        if (!block.IsWriteEnabled) block.UpgradeOpen();
         block.BlockTableRecord = definitionId;
         block.RecordGraphicsModified(true);
         return true;
@@ -205,6 +228,7 @@ internal static class LabelAttachmentMonitor
     private static void OnCreated(object sender, DocumentCollectionEventArgs args) => Ensure(args.Document);
     private static void OnClosing(object sender, DocumentCollectionEventArgs args)
     {
+        LabelGripEditing.Close(args.Document.Database);
         if (Watches.TryGetValue(args.Document, out var watch)) { watch.Dispose(); Watches.Remove(args.Document); }
     }
     internal static void Stop()

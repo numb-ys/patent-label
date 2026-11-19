@@ -30,7 +30,7 @@ No installer runs during packaging. `--no-build` packages an already built DLL. 
 ```powershell
 python -m unittest discover -s tests -p "test_public*.py" -v
 python scripts/package_english.py --year 2019
-powershell -NoProfile -ExecutionPolicy Bypass -File tests/test_english_installer.ps1 -Year 2019 -PackageDirectory build/packages/PatentLabel-AutoCAD2019-0.3.1-en
+powershell -NoProfile -ExecutionPolicy Bypass -File tests/test_english_installer.ps1 -Year 2019 -PackageDirectory build/packages/PatentLabel-AutoCAD2019-0.3.2-en
 dotnet run --project tests/Metadata2014/Metadata2014.csproj -- src/PatentLabel.English2019/bin/Release/net47/PatentLabel.English2019.dll ".NETFramework,Version=v4.7" "23.0."
 ```
 
@@ -45,11 +45,14 @@ python scripts/test_plugin.py --source build/english/2019/PatentLabel.lsp --lega
 python scripts/test_ui.py --english
 dotnet build tests/AttachmentCommands/AttachmentCommands.csproj -c Release
 python scripts/test_attachment.py --english
+python scripts/test_grips.py --english
 ```
 
 These checks isolate the test registry branch, restore its selected settings and use temporary drawing copies. `--legacy-engine` restarts that isolated Core Console profile with `LISPSYS=0`. A passing 2019 LSP check in a 2026 host verifies common backend behavior and ASCII loading only, not native 2019 compatibility.
 
 The attachment suite loads a test-only command assembly in the isolated 2026 host. It changes attributes through native command transactions, then checks deferred synchronization, copied-block isolation, one-step undo/redo, cancelled transactions, UCS/scale, the move-preview input bridge and save/reopen. The helper assembly is never packaged. Object-modified notifications only collect IDs; geometry updates run after completed commands, without native double-click interception or interactive calls in event handlers.
+
+The grip suite calls AutoCAD's actual GetGripPoints/MoveGripPointsAt protocol on disposable native clones and real block references. It verifies continuous samples, fixed targets, preview extents, cancel, commit, copy isolation and undo/redo. A separate plot-only fixture calls the native WorldDraw path and exports its preview to PDF for visual inspection. Production preview callbacks draw detached entities and do not write to the DWG; only the final database-resident grip callback commits geometry. Custom grip/draw/extents rules use the PATENT_LABEL XData filter. Do not dispose grips returned by an overrule manually after notifying GripsToBeDeleted; the managed host releases those grips.
 
 Desktop users should additionally verify cursor preview, selection, second-click preview retention, cancel, focus, native attribute editing, startup/new-document loading and save/reopen behavior on each claimed CAD/Windows language combination. Do not modify working drawings for automated testing.
 

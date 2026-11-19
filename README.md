@@ -10,7 +10,7 @@ See two-click placement and automatic numbering in the [33-second AutoCAD demo (
 
 ## Download and install
 
-Get a ZIP for your exact AutoCAD year and language from [Releases](https://github.com/numb-ys/patent-label/releases). Version 0.3.1 includes English and Chinese packages for all three supported years. English labels use Arial from your Windows installation.
+Get a ZIP for your exact AutoCAD year and language from [Releases](https://github.com/numb-ys/patent-label/releases). Version 0.3.2 includes English and Chinese packages for all three supported years. English labels use Arial from your Windows installation.
 
 1. Extract the entire ZIP.
 2. Open the matching AutoCAD version and a drawing. Finish any active command.
@@ -45,7 +45,7 @@ Labels accept 1-32 ASCII letters/digits, including `123`, `A`, `a`, `A01` and `1
 
 English defaults to **Arial Regular**; Chinese defaults to **SimHei Regular**. Editing an existing callout preserves its current font unless you explicitly restyle it. Copied callouts are edited independently. Double-click uses AutoCAD's own attribute editor. Custom inline/double-click interception was removed after crash reports.
 
-Move the `NUMBER` attribute grip to reposition just the label. The leader reconnects when the native command finishes, keeping the point on the part fixed. Native attribute text edits also recalculate the gap. Use `BHYD` for a live preview of the whole leader while moving. Moving the entire block still moves the entire callout. Existing PatentLabel blocks gain this behavior when the updated managed module is loaded; exploded geometry is not linked.
+Select a callout with a normal click, then drag its blue grip at the label center. The full leader previews continuously while the label moves, keeping the point on the part fixed; no command needs to be typed. Esc cancels, and one Undo restores both the label and leader. Native attribute text edits also recalculate the gap when the editor finishes. `BHYD` remains available as an optional command. The `MOVE` command moves the entire callout. Existing PatentLabel blocks gain this behavior when the updated managed module is loaded; exploded geometry is not linked.
 
 ## Compatibility and verification
 

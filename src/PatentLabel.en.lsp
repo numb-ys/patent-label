@@ -1,11 +1,11 @@
-;;; PatentLabel 0.3.1 - one callout per command, repeated by CAD's native Space/Enter.
+;;; PatentLabel 0.3.2 - one callout per command, repeated by CAD's native Space/Enter.
 ;;; ASCII English source, compatible with legacy and Unicode AutoLISP engines.
 ;;; Optional .NET UI supplies native drag preview; editing uses the command-line backend.
 ;;; No changes to OSNAP/UCS/security settings or global double-click bindings.
 
 (defun bh:ui-available-p ()
   (and (member "BH:UI-READY" (atoms-family 1 '("BH:UI-READY")))
-       (equal (bh:ui-ready) "0.3.1")))
+       (equal (bh:ui-ready) "0.3.2")))
 
 (defun bh:clear-preview ()
   (if (member "BH:UI-PREVIEW-CLEAR" (atoms-family 1 '("BH:UI-PREVIEW-CLEAR")))
@@ -496,11 +496,11 @@
   (prompt "\nBH: create one callout. BHSZ: height/landing/gap/confirmation/weight. BHXG: edit label. BHJC: change label font and weight.")
   (prompt "\nConfirm the label to finish. Press Space/Enter again to repeat BH with the next suggested label. Use U at the command prompt to undo.")
   (prompt "\nThe second point is the label center. No arrowhead; the leader bends left/right automatically. Uses the current UCS and space.")
-  (prompt "\nBHYD: reposition a label with full leader preview. Native attribute moves/edits update the leader when the command finishes.")
+  (prompt "\nSelect a callout and drag its blue label-center grip for live leader preview with a fixed target. BHYD is also available.")
   (princ))
 
 (bh:sync-ui)
-(prompt "\nPatentLabel 0.3.1 loaded (English). Type BH to start, BHSZ for settings, BHHELP for help.")
+(prompt "\nPatentLabel 0.3.2 loaded (English). Type BH to start, BHSZ for settings, BHHELP for help.")
 (if (bh:ui-available-p)
   (prompt "\nFull leader preview is enabled. Use BHXG to edit labels at the command line.")
   (prompt "\nBasic mode. NETLOAD the matching PatentLabel assembly to enable full leader preview."))

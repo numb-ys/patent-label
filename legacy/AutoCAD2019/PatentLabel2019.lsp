@@ -1,11 +1,11 @@
-;;; PatentLabel 0.3.1-2019 - one callout per command, repeated by CAD's native Space/Enter.
+;;; PatentLabel 0.3.2-2019 - one callout per command, repeated by CAD's native Space/Enter.
 ;;; AutoCAD 2019: CP936/GBK source, no UTF-8 BOM or LISPSYS dependency.
 ;;; Optional .NET UI supplies native drag preview; editing uses the command-line backend.
 ;;; No changes to OSNAP/UCS/security settings or global double-click bindings.
 
 (defun bh:ui-available-p ()
   (and (member "BH:UI-READY" (atoms-family 1 '("BH:UI-READY")))
-       (equal (bh:ui-ready) "0.3.1-2019")))
+       (equal (bh:ui-ready) "0.3.2-2019")))
 
 (defun bh:clear-preview ()
   (if (member "BH:UI-PREVIEW-CLEAR" (atoms-family 1 '("BH:UI-PREVIEW-CLEAR")))
@@ -496,17 +496,17 @@
   (prompt "\nBH：单次标号；BHSZ：字高/折线/间隙/确认键/字重；BHXG：改号；BHJC：修改已有标号字重。")
   (prompt "\n确认编号即结束命令；再次空格/回车由 CAD 重复 BH，仍保留下一编号建议。U 在 CAD 命令行撤销。")
   (prompt "\n数字点击位置为中心；默认无箭头，左右自动折线；使用当前 UCS 平面和当前空间。")
-  (prompt "\nBHYD：移动编号并预览整条引线；拖动编号夹点或原生改字并结束命令后，引线自动同步。")
+  (prompt "\n单击标号，拖动编号中心的蓝色夹点，整条引线实时跟随，零件端不动；BHYD 也可移动编号。")
   (princ))
 
 (defun c:BHVER ()
-  (prompt (strcat "\nPatentLabel 0.3.1-2019 | CAD " (getvar "ACADVER")))
+  (prompt (strcat "\nPatentLabel 0.3.2-2019 | CAD " (getvar "ACADVER")))
   (prompt (if (bh:ui-available-p) "\n2019 预览模块：已加载。" "\n2019 预览模块：未加载，当前为基础模式。"))
   (prompt (strcat "\n黑体文件：" (if (findfile "simhei.ttf") (findfile "simhei.ttf") "未找到")))
   (princ))
 
 (bh:sync-ui)
-(prompt "\n专利附图标号 0.3.1-2019 已加载。输入 BH 开始，BHSZ 设置，BHHELP 查看帮助。")
+(prompt "\n专利附图标号 0.3.2-2019 已加载。输入 BH 开始，BHSZ 设置，BHHELP 查看帮助。")
 (if (bh:ui-available-p)
   (prompt "\n整条折线随鼠标预览已启用；BHXG 在命令行修改编号。")
   (prompt "\n当前为基础模式；NETLOAD 加载配套 PatentLabel.UI2019.dll 可启用整条折线预览。"))

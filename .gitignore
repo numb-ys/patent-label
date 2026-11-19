@@ -24,5 +24,6 @@ tmp/
 *.suo
 .vs/
 /tests/gui_check.py
+/plot.log
 legacy/**/先看这里.pdf
 legacy/**/先看这里.txt

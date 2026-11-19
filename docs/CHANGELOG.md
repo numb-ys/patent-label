@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.2 - Native live label grip
+
+- Select a callout normally and drag the blue grip at its label center. The full leader previews continuously with a fixed target; no typed command is needed.
+- Native grip/draw/extents overrules are restricted to PatentLabel blocks. Preview callbacks only change detached graphics; a final native grip transaction saves the label and leader together.
+- Esc cancels, one Undo/Redo restores both parts, and copied callouts stay independent. Existing blocks need no conversion. BHYD remains optional.
+- English and Chinese editions and guides updated for 2014, 2019 and 2026. Restart AutoCAD after installing.
+
+Validation: 27 native grip checks per language in isolated 2026 Core Console runs, including real native grip callbacks, successive drag samples, drawing extents, actual WorldDraw/plot output, cancellation and undo/redo. Desktop mouse interaction and actual 2014/2019 installations still require user testing.
+
 ## 0.3.1 - Leader attachment
 
 - The leader follows a moved `NUMBER` attribute after the native command finishes. The target on the part stays fixed.

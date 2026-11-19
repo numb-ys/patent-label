@@ -23,7 +23,7 @@ INSTALL = [
     "把收到的 ZIP 压缩包完整解压，打开解压后的文件夹。",
     "启动 AutoCAD 2014，打开一张空白图纸，结束当前命令或对话框。",
     "双击 Install2014.cmd。看到 Installed: PatentLabel AutoCAD 2014，即安装成功。",
-    "保存工作，退出并重新启动 CAD。看到“专利附图标号 0.3.1-2014 已加载”，即可使用。",
+    "保存工作，退出并重新启动 CAD。看到“专利附图标号 0.3.2-2014 已加载”，即可使用。",
 ]
 USE = [
     "在 CAD 命令行输入 BH，按回车。",
@@ -34,10 +34,10 @@ USE = [
 ]
 COMMANDS = [
     ("修改编号", "输入 BHXG，点选标号，在命令行输入新编号，按空格确认；引线间隙同步调整。"),
-    ("移动编号", "输入 BHYD，点选标号，移动鼠标预览整条引线，点击新编号位置；零件端保持原位。"),
+    ("移动编号", "单击数字选中标号，拖动数字中心的蓝色夹点，整条引线实时预览；点击确定，零件端不动。无需输入命令。"),
     ("调整设置", "输入 BHSZ，可设置字高、折线长度、文字间隙、确认键及加粗状态。"),
     ("取消与撤销", "Esc 取消当前操作；U 或 Ctrl+Z 撤销已完成的操作。"),
-    ("原生修改", "双击编号改字，或拖动编号属性夹点；结束操作后引线自动同步。移动整块会整体移动。"),
+    ("双击改字", "双击编号，用 CAD 自带属性窗口修改并关闭，引线间隙同步调整。BHYD 也可用来移动编号。"),
 ]
 PROBLEMS = [
     "安装报错：确认打开的是 AutoCAD 2014，已有图纸，当前命令或对话框已结束，再运行安装脚本。",
@@ -71,7 +71,7 @@ def main(year=2014):
     def steps(items):
         return [p(f"{index}. {text}") for index, text in enumerate(items, 1)]
 
-    story = [p(TITLE, title), p("适用 Windows 完整版 AutoCAD 2014，32 位或 64 位。版本 0.3.1-2014。请先在空白图纸中试用。", intro)]
+    story = [p(TITLE, title), p("适用 Windows 完整版 AutoCAD 2014，32 位或 64 位。版本 0.3.2-2014。请先在空白图纸中试用。", intro)]
     story += [p("一 首次安装", heading)] + steps(INSTALL)
     story += [p("安装只做一次。以后启动 CAD、打开或新建图纸均自动加载，无需逐张图纸重新 APPLOAD。", note)]
     story += [p("二 开始标号", heading)] + steps(USE)
@@ -108,7 +108,7 @@ def main(year=2014):
         assert required.replace("2014", str(year)) in extracted, required
     shutil.copy2(destination, legacy / "先看这里.pdf")
 
-    lines = [TITLE, "", "适用 Windows 完整版 AutoCAD 2014，32 位或 64 位。版本 0.3.1-2014。", "请先在空白图纸中试用。", "", "一、首次安装"]
+    lines = [TITLE, "", "适用 Windows 完整版 AutoCAD 2014，32 位或 64 位。版本 0.3.2-2014。", "请先在空白图纸中试用。", "", "一、首次安装"]
     lines += [f"{index}. {text}" for index, text in enumerate(INSTALL, 1)]
     lines += ["", "安装只做一次。以后启动 CAD、打开或新建图纸均自动加载，无需逐张图纸重新 APPLOAD。", "", "二、开始标号"]
     lines += [f"{index}. {text}" for index, text in enumerate(USE, 1)]

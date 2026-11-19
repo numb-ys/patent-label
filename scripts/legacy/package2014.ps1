@@ -19,7 +19,7 @@ $project = Join-Path $projectRoot 'src\PatentLabel.UI2014\PatentLabel.UI2014.csp
 if ($LASTEXITCODE -ne 0) { throw 'AutoCAD 2014 module build failed.' }
 
 $stageRoot = Join-Path $projectRoot ('artifacts\package2014-' + [guid]::NewGuid().ToString('N'))
-$package = Join-Path $stageRoot 'PatentLabel-AutoCAD2014-0.3.1'
+$package = Join-Path $stageRoot 'PatentLabel-AutoCAD2014-0.3.2'
 $bundle = Join-Path $package 'PatentLabel2014.bundle'
 $contents = Join-Path $bundle 'Contents\Windows'
 New-Item -ItemType Directory -Path $contents -Force | Out-Null
@@ -37,10 +37,10 @@ foreach ($extension in @('.pdf','.txt')) {
     $guidePath = Join-Path $legacyRoot ($guideName + $extension)
     if (Test-Path -LiteralPath $guidePath) { Copy-Item -LiteralPath $guidePath -Destination $package }
 }
-$archiveName = 'PatentLabel-AutoCAD2014-0.3.1-zh-CN.zip'
+$archiveName = 'PatentLabel-AutoCAD2014-0.3.2-zh-CN.zip'
 if ((Test-Path -LiteralPath (Join-Path $legacyRoot ($guideName + '.pdf'))) -and
     (Test-Path -LiteralPath (Join-Path $legacyRoot ($guideName + '.txt')))) {
-    $archiveName = 'PatentLabel-AutoCAD2014-0.3.1-zh-CN.zip'
+    $archiveName = 'PatentLabel-AutoCAD2014-0.3.2-zh-CN.zip'
 }
 $archive = Join-Path (Join-Path $projectRoot 'dist') $archiveName
 Copy-Item -LiteralPath (Join-Path $projectRoot 'LICENSE') -Destination $package

@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <AssemblyName>PatentLabel.UI2019</AssemblyName>
-    <Version>0.3.1.2019</Version>
+    <Version>0.3.2.2019</Version>
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
     <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../..'))=/_/PatentLabel</PathMap>
