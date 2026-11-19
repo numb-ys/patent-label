@@ -4,6 +4,8 @@
 
 用于 AutoCAD 专利附图的两点标号工具：点引线指向点，点编号中心，再输入或接受建议编号。整条折线随鼠标预览；首条默认 1，可以直接确认。
 
+实录展示了两点放置标号和连续编号。[查看 33 秒 AutoCAD 演示（MP4）](patent-label-demo.mp4)
+
 ## 下载与安装
 
 从 [Releases](https://github.com/numb-ys/patent-label/releases) 下载对应 CAD 年份、语言的安装包，完整解压。打开对应 CAD 的图纸，运行安装脚本，再重启 CAD，输入 `BH` 使用。

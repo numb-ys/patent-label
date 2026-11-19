@@ -4,6 +4,8 @@
 
 Two-click reference callouts for patent drawings in AutoCAD. Pick the leader target, pick the label position, then accept or type a label. PatentLabel previews the full leader, suggests the next identifier and keeps each callout as an ordinary block with a `NUMBER` attribute.
 
+See two-click placement and automatic numbering in the [33-second AutoCAD demo (MP4)](docs/patent-label-demo.mp4).
+
 ![Two clicks define the leader target and label position](docs/callout.svg)
 
 ## Download and install
