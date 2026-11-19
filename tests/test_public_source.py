@@ -31,11 +31,11 @@ class PublicSourceChecks(unittest.TestCase):
         for year in (2014, 2019, 2026):
             prepare(year)
             generated = ROOT / f"build/english/{year}"
-            for name in ("Interaction.cs", "LabelFonts.cs", "PatentLabel.lsp"):
+            for name in ("Interaction.cs", "LabelFonts.cs", "LabelAttachment.cs", "PatentLabel.lsp"):
                 content = (generated / name).read_text(encoding="ascii")
                 self.assertTrue(content.isascii())
             backend = (generated / "PatentLabel.lsp").read_text(encoding="ascii")
-            self.assertIn(f"0.3.0-en-{year}", backend)
+            self.assertIn(f"0.3.1-en-{year}", backend)
             self.assertIn("c:BHVER", backend)
         self.assertEqual(before, {p: p.read_bytes() for p in paths})
 

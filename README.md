@@ -8,7 +8,7 @@ Two-click reference callouts for patent drawings in AutoCAD. Pick the leader tar
 
 ## Download and install
 
-Get a ZIP for your exact AutoCAD year and language from [Releases](https://github.com/numb-ys/patent-label/releases). The English 0.3.0 packages include an English installer, command prompts, user guide and Arial fonts selected from your Windows installation. Existing Chinese 0.2.4 trial packages are also provided.
+Get a ZIP for your exact AutoCAD year and language from [Releases](https://github.com/numb-ys/patent-label/releases). Version 0.3.1 includes English and Chinese packages for all three supported years. English labels use Arial from your Windows installation.
 
 1. Extract the entire ZIP.
 2. Open the matching AutoCAD version and a drawing. Finish any active command.
@@ -36,11 +36,14 @@ Labels accept 1-32 ASCII letters/digits, including `123`, `A`, `a`, `A01` and `1
 | `BH` | Create one callout with a two-segment leader |
 | `BHSZ` | Set height, landing length, gap, confirmation key and weight |
 | `BHXG` | Edit a label at the command line and recalculate the leader gap |
+| `BHYD` | Move the label with a full leader preview, keeping the target fixed |
 | `BHJC` | Apply the edition's font and Bold/Regular weight to selected callouts |
 | `BHVER` | English editions: show version, preview-module status and font lookup |
 | `BHHELP` | Show help |
 
 English defaults to **Arial Regular**; Chinese defaults to **SimHei Regular**. Editing an existing callout preserves its current font unless you explicitly restyle it. Copied callouts are edited independently. Double-click uses AutoCAD's own attribute editor. Custom inline/double-click interception was removed after crash reports.
+
+Move the `NUMBER` attribute grip to reposition just the label. The leader reconnects when the native command finishes, keeping the point on the part fixed. Native attribute text edits also recalculate the gap. Use `BHYD` for a live preview of the whole leader while moving. Moving the entire block still moves the entire callout. Existing PatentLabel blocks gain this behavior when the updated managed module is loaded; exploded geometry is not linked.
 
 ## Compatibility and verification
 

@@ -15,11 +15,11 @@ foreach ($name in @('AcCoreMgd.dll','AcDbMgd.dll','AcMgd.dll')) {
 & py -3 (Join-Path $PSScriptRoot 'prepare-sources.py')
 if ($LASTEXITCODE -ne 0) { throw 'Source preparation failed.' }
 $project = Join-Path $projectRoot 'src\PatentLabel.UI2014\PatentLabel.UI2014.csproj'
-& dotnet build $project -c Release --nologo ('-p:AutoCAD2014RefDir=' + $AutoCAD2014RefDir)
+& dotnet build $project -c Release -t:Rebuild --nologo ('-p:AutoCAD2014RefDir=' + $AutoCAD2014RefDir)
 if ($LASTEXITCODE -ne 0) { throw 'AutoCAD 2014 module build failed.' }
 
 $stageRoot = Join-Path $projectRoot ('artifacts\package2014-' + [guid]::NewGuid().ToString('N'))
-$package = Join-Path $stageRoot 'PatentLabel-AutoCAD2014-0.2.4'
+$package = Join-Path $stageRoot 'PatentLabel-AutoCAD2014-0.3.1'
 $bundle = Join-Path $package 'PatentLabel2014.bundle'
 $contents = Join-Path $bundle 'Contents\Windows'
 New-Item -ItemType Directory -Path $contents -Force | Out-Null
@@ -37,12 +37,14 @@ foreach ($extension in @('.pdf','.txt')) {
     $guidePath = Join-Path $legacyRoot ($guideName + $extension)
     if (Test-Path -LiteralPath $guidePath) { Copy-Item -LiteralPath $guidePath -Destination $package }
 }
-$archiveName = 'PatentLabel-AutoCAD2014-0.2.4-test.zip'
+$archiveName = 'PatentLabel-AutoCAD2014-0.3.1-zh-CN.zip'
 if ((Test-Path -LiteralPath (Join-Path $legacyRoot ($guideName + '.pdf'))) -and
     (Test-Path -LiteralPath (Join-Path $legacyRoot ($guideName + '.txt')))) {
-    $archiveName = 'PatentLabel-AutoCAD2014-0.2.4-with-guide.zip'
+    $archiveName = 'PatentLabel-AutoCAD2014-0.3.1-zh-CN.zip'
 }
 $archive = Join-Path (Join-Path $projectRoot 'dist') $archiveName
+Copy-Item -LiteralPath (Join-Path $projectRoot 'LICENSE') -Destination $package
+Copy-Item -LiteralPath (Join-Path $projectRoot 'THIRD_PARTY_NOTICES.md') -Destination $package
 New-Item -ItemType Directory -Path (Split-Path -Parent $archive) -Force | Out-Null
 Compress-Archive -LiteralPath $package -DestinationPath $archive -CompressionLevel Optimal -Force
 Write-Output ('PackageDirectory: ' + $package)

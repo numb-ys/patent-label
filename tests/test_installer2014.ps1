@@ -24,11 +24,11 @@ try {
     Install-PatentLabel2014 $doc | Out-Null
     Check (Test-Path -LiteralPath $manifestPath) 'installs-manifest'
     Check (Test-Path -LiteralPath (Join-Path $contentRoot 'PatentLabel2014.lsp')) 'installs-backend'
-    Check (Test-Path -LiteralPath (Join-Path $contentRoot 'PatentLabel.UI2014.0.2.4.2014.dll')) 'installs-versioned-dll'
+    Check (Test-Path -LiteralPath (Join-Path $contentRoot 'PatentLabel.UI2014.0.3.1.2014.dll')) 'installs-versioned-dll'
     Check ($doc.Vars['TRUSTEDPATHS'] -eq ('C:\Existing;D:\Other;' + $contentRoot)) 'appends-only-exact-plugin-trusted-directory'
     Check ($doc.Vars['APPAUTOLOAD'] -eq 14) 'enables-only-startup-bit'
     Check ($doc.Vars['SECURELOAD'] -eq 2) 'preserves-secureload'
-    Check ((Read-InstallState).Version -eq '0.2.4.2014') 'records-version'
+    Check ((Read-InstallState).Version -eq '0.3.1.2014') 'records-version'
     Install-PatentLabel2014 $doc | Out-Null
     Check (@($doc.Vars['TRUSTEDPATHS'] -split ';' | Where-Object { $_ -eq $contentRoot }).Count -eq 1) 'reinstall-does-not-duplicate-trusted-directory'
     Check ((Read-InstallState).AutoLoadBefore -eq 12) 'reinstall-preserves-original-startup-state'

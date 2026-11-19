@@ -4,7 +4,7 @@ param(
     [Parameter(Mandatory=$true)][string]$PackageDirectory
 )
 $PackageDirectory = (Resolve-Path -LiteralPath $PackageDirectory).Path
-$ExpectedVersion = '0.3.0.' + $Year
+$ExpectedVersion = '0.3.1.' + $Year
 $ExpectedDll = if ($Year -eq 2026) { 'PatentLabel.UI.' + $ExpectedVersion + '.dll' } else { 'PatentLabel.UI' + $Year + '.' + $ExpectedVersion + '.dll' }
 
 $ErrorActionPreference = 'Stop'

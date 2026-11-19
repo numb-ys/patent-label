@@ -21,7 +21,7 @@ using AcPolyline = Autodesk.AutoCAD.DatabaseServices.Polyline;
 
 namespace PatentLabel.UI2014;
 
-/// <summary>UI only: all permanent DWG edits remain in the versioned LISP backend.</summary>
+/// <summary>Native preview and deferred leader attachment for the versioned LISP backend.</summary>
 public sealed class Interaction : IExtensionApplication
 {
     private static bool initialized;
@@ -35,25 +35,28 @@ public sealed class Interaction : IExtensionApplication
     {
         if (initialized) return;
         initialized = true;
+        LabelAttachmentMonitor.Start();
         CoreApp.Idle += OnIdle;
     }
 
     public void Terminate()
     {
         CoreApp.Idle -= OnIdle;
+        LabelAttachmentMonitor.Stop();
         ClearPreview();
         bootstrapped.Clear();
         initialized = false;
     }
 
     [LispFunction("bh:ui-ready")]
-    public static string Ready(ResultBuffer? arguments) => "0.2.4-2014";
+    public static string Ready(ResultBuffer? arguments) => "0.3.1-2014";
 
     [LispFunction("bh:ui-state")]
     public static string State(ResultBuffer? arguments) => LegacyJson.Serialize(new
     {
-        version = "0.2.4-2014", inlineEditingEnabled = false,
-        defaultBold = boldSetting,
+        version = "0.3.1-2014", inlineEditingEnabled = false,
+        defaultBold = boldSetting, leaderFollowEnabled = true,
+        followedEdits = LabelAttachmentMonitor.Updated, followError = LabelAttachmentMonitor.LastError,
         previewSamples = LabelJig.SampleCount, previewFrames = LabelJig.FrameCount,
         retainedDrawables = retainedPreview?.DrawableCount ?? 0,
         registeredTransients = retainedPreview?.RegisteredCount ?? 0
@@ -123,6 +126,26 @@ public sealed class Interaction : IExtensionApplication
         // A ResultBuffer containing ONE Point3d produces ((x y z)) in AutoLISP.
         // Three real values produce the plain (x y z) expected by arithmetic.
         return PickedPoint(jig.Center);
+    }
+
+    [LispFunction("bh:ui-move-label")]
+    public static ResultBuffer? MoveLabel(ResultBuffer arguments)
+    {
+        ClearPreview();
+        var doc = CoreApp.DocumentManager.MdiActiveDocument;
+        var value = arguments.AsArray()[0].Value as string;
+        var id = doc.Database.GetObjectId(false, new Handle(long.Parse(value!, NumberStyles.HexNumber)), 0);
+        LabelAttachment.Snapshot? state;
+        using (var tr = doc.Database.TransactionManager.StartOpenCloseTransaction())
+            state = LabelAttachment.Read(doc.Database, tr, id);
+        if (state is null) return null;
+        using var jig = new LabelJig(doc.Database, state.Tip, state.Number, state.Height,
+                                    state.Landing, state.Gap, state.Transform, state.Style, state.Center, state.WidthFactor);
+        var result = doc.Editor.Drag(jig);
+        if (jig.EmptyResponse || result.Status == PromptStatus.Cancel) return null;
+        if (result.Status != PromptStatus.OK) return null;
+        HoldPreview(doc, jig);
+        return PickedPoint(jig.Center.TransformBy(state.Transform).TransformBy(doc.Editor.CurrentUserCoordinateSystem.Inverse()));
     }
 
     [LispFunction("bh:ui-preview-hold")]
@@ -252,7 +275,7 @@ internal sealed class LabelJig : DrawJig, IDisposable
     public bool EmptyResponse { get; private set; }
 
     public LabelJig(Database db, Point3d target, string number, double height,
-                    double landing, double gap, Matrix3d ucs)
+                    double landing, double gap, Matrix3d ucs, ObjectId? styleOverride = null, Point3d? centerOverride = null, double widthFactor = 1)
     {
         this.target = target;
         this.height = height;
@@ -260,16 +283,17 @@ internal sealed class LabelJig : DrawJig, IDisposable
         this.gap = gap;
         this.ucs = ucs;
         inverse = ucs.Inverse();
-        Center = target + new Vector3d(height * 6, height * 4, 0);
+        Center = centerOverride ?? target + new Vector3d(height * 6, height * 4, 0);
         text = new DBText();
         text.SetDatabaseDefaults(db);
         using var tr = db.TransactionManager.StartOpenCloseTransaction();
         var table = (TextStyleTable)tr.GetObject(db.TextStyleTableId, OpenMode.ForRead);
-        if (table.Has(Interaction.TextStyleName)) text.TextStyleId = table[Interaction.TextStyleName];
+        if (styleOverride.HasValue) text.TextStyleId = styleOverride.Value;
+        else if (table.Has(Interaction.TextStyleName)) text.TextStyleId = table[Interaction.TextStyleName];
         textStyleName = ((TextStyleTableRecord)tr.GetObject(text.TextStyleId, OpenMode.ForRead)).Name;
         text.Height = height;
         text.TextString = number;
-        text.WidthFactor = 1;
+        text.WidthFactor = widthFactor;
         text.Position = Point3d.Origin;
         width = Math.Max(height * .15, text.GeometricExtents.MaxPoint.X - text.GeometricExtents.MinPoint.X);
         text.HorizontalMode = TextHorizontalMode.TextCenter;

@@ -48,7 +48,11 @@
   "\nBH：单次标号；BHSZ：字高/折线/间隙/确认键/字重；BHXG：改号；BHJC：修改已有标号字重。": "\nBH: create one callout. BHSZ: height/landing/gap/confirmation/weight. BHXG: edit label. BHJC: change label font and weight.",
   "\n确认编号即结束命令；再次空格/回车由 CAD 重复 BH，仍保留下一编号建议。U 在 CAD 命令行撤销。": "\nConfirm the label to finish. Press Space/Enter again to repeat BH with the next suggested label. Use U at the command prompt to undo.",
   "\n数字点击位置为中心；默认无箭头，左右自动折线；使用当前 UCS 平面和当前空间。": "\nThe second point is the label center. No arrowhead; the leader bends left/right automatically. Uses the current UCS and space.",
-  "\n专利附图标号 0.2.4 已加载。输入 BH 开始，BHSZ 设置，BHHELP 查看帮助。": "\nPatentLabel 0.3.0 loaded (English). Type BH to start, BHSZ for settings, BHHELP for help.",
+  "\n专利附图标号 0.3.1 已加载。输入 BH 开始，BHSZ 设置，BHHELP 查看帮助。": "\nPatentLabel 0.3.1 loaded (English). Type BH to start, BHSZ for settings, BHHELP for help.",
   "\n整条折线随鼠标预览已启用；BHXG 在命令行修改编号。": "\nFull leader preview is enabled. Use BHXG to edit labels at the command line.",
-  "\n当前为基础模式；NETLOAD 加载配套 PatentLabel.UI.dll 可启用整条折线预览。": "\nBasic mode. NETLOAD the matching PatentLabel assembly to enable full leader preview."
+  "\n当前为基础模式；NETLOAD 加载配套 PatentLabel.UI.dll 可启用整条折线预览。": "\nBasic mode. NETLOAD the matching PatentLabel assembly to enable full leader preview.",
+  "无法移动编号文字。": "Cannot move the label attribute.",
+  "\n选择要移动编号位置的标号（引线或数字）: ": "\nSelect a callout to reposition (leader or label): ",
+  "\n点取新的编号中心位置 <取消>: ": "\nPick the new label center <Cancel>: ",
+  "\nBHYD：移动编号并预览整条引线；拖动编号夹点或原生改字并结束命令后，引线自动同步。": "\nBHYD: reposition a label with full leader preview. Native attribute moves/edits update the leader when the command finishes."
 }

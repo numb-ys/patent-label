@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.0"
+VERSION = "0.3.1"
 YEARS = (2014, 2019, 2026)
 
 
@@ -21,7 +21,7 @@ def english_backend():
             return json.dumps(translations[literal], ensure_ascii=True)
         return match.group()
     source = re.sub(r'"(?:\\.|[^"\\])*"', translate, source)
-    source = source.replace("0.2.4", VERSION)
+    source = source.replace("0.3.1", VERSION)
     source = source.replace(";;; UTF-8. AutoCAD 2021+ with LISPSYS=1/2; verified host recorded in README.",
                             ";;; ASCII English source, compatible with legacy and Unicode AutoLISP engines.")
     source = source.replace("PATENT_LABEL_SIMHEI_", "PATENT_LABEL_ARIAL_").replace("PatentLabel.SimHeiWeight", "PatentLabel.EnglishWeight")
@@ -43,7 +43,7 @@ def prepare(year):
     if year == 2026:
         ui = (ROOT / "src/PatentLabel.UI/Interaction.cs").read_text(encoding="utf-8")
         original_namespace = "PatentLabel.UI"
-        original_version = "0.2.4"
+        original_version = "0.3.1"
     else:
         spec = importlib.util.spec_from_file_location("legacy_generator", ROOT / "scripts/legacy/prepare-sources.py")
         module = importlib.util.module_from_spec(spec)
@@ -53,13 +53,13 @@ def prepare(year):
         (shared / "src/PatentLabel.UI").mkdir(parents=True, exist_ok=True)
         import shutil
         shutil.copy2(ROOT / "src/PatentLabel.lsp", shared / "src/PatentLabel.lsp")
-        for name in ("Interaction.cs", "LabelFonts.cs"):
+        for name in ("Interaction.cs", "LabelFonts.cs", "LabelAttachment.cs"):
             shutil.copy2(ROOT / "src/PatentLabel.UI" / name, shared / "src/PatentLabel.UI" / name)
         module.ROOT = shared
         module.prepare(year)
         ui = (shared / f"src/PatentLabel.UI{year}/Interaction.cs").read_text(encoding="utf-8")
         original_namespace = f"PatentLabel.UI{year}"
-        original_version = f"0.2.4-{year}"
+        original_version = f"0.3.1-{year}"
     ui = ui.replace(original_namespace, namespace).replace(original_version, identity)
     ui = ui.replace("移动鼠标预览整条折线，点击数字中心位置 <取消本条>",
                     "Move to preview the leader; pick the label center <Cancel this callout>")
@@ -67,9 +67,10 @@ def prepare(year):
     if year == 2026:
         ui = "using System;\nusing System.Collections.Generic;\nusing System.Linq;\n" + ui
     fonts = (ROOT / "src/english/LabelFonts.cs").read_text(encoding="utf-8").replace("namespace PatentLabel.English;", f"namespace {namespace};")
+    attachment = (ROOT / "src/PatentLabel.UI/LabelAttachment.cs").read_text(encoding="utf-8").replace("namespace PatentLabel.UI;", f"namespace {namespace};")
     generated = ROOT / f"build/english/{year}"
     generated.mkdir(parents=True, exist_ok=True)
-    for name, value in (("Interaction.cs", ui), ("LabelFonts.cs", fonts)):
+    for name, value in (("Interaction.cs", ui), ("LabelFonts.cs", fonts), ("LabelAttachment.cs", attachment)):
         value.encode("ascii")
         (generated / name).write_text(value, encoding="ascii")
     source = source.replace(VERSION, identity)

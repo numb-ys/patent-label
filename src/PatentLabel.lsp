@@ -1,11 +1,11 @@
-;;; PatentLabel 0.2.4 - one callout per command, repeated by CAD's native Space/Enter.
+;;; PatentLabel 0.3.1 - one callout per command, repeated by CAD's native Space/Enter.
 ;;; UTF-8. AutoCAD 2021+ with LISPSYS=1/2; verified host recorded in README.
 ;;; Optional .NET UI supplies native drag preview; editing uses the command-line backend.
 ;;; No changes to OSNAP/UCS/security settings or global double-click bindings.
 
 (defun bh:ui-available-p ()
   (and (member "BH:UI-READY" (atoms-family 1 '("BH:UI-READY")))
-       (equal (bh:ui-ready) "0.2.4")))
+       (equal (bh:ui-ready) "0.3.1")))
 
 (defun bh:clear-preview ()
   (if (member "BH:UI-PREVIEW-CLEAR" (atoms-family 1 '("BH:UI-PREVIEW-CLEAR")))
@@ -160,7 +160,7 @@
 
 (defun bh:text-width (number height / box)
   (setq box (textbox (list '(0 . "TEXT") (cons 1 number)
-                          (cons 40 height) '(41 . 1.0) '(50 . 0.0)
+                          (cons 40 height) (cons 41 (if bh:label-width bh:label-width 1.0)) '(50 . 0.0)
                           (cons 7 (bh:text-style)))))
   (bh:require box "无法计算数字宽度，请检查文字字体。")
   (max (* height 0.15) (- (car (cadr box)) (caar box))))
@@ -191,9 +191,11 @@
           (cons 50 rotation) (cons 7 (bh:text-style)) (cons 210 normal)))
   (if (= kind "ATTDEF") (append data '((3 . "编号"))) data))
 
-(defun bh:make-definition (tip number height landing gap / points block)
-  (setq points (bh:geometry tip number height landing gap))
+(defun bh:make-definition (tip number height landing gap / points block offset)
+  (setq offset (if bh:label-offset bh:label-offset '(0.0 0.0 0.0)))
+  (setq points (bh:geometry (mapcar '- tip offset) number height landing gap))
   (bh:require points "编号位置离指向点太近，数字会遮挡指向点，请重新选择位置。")
+  (setq points (mapcar '(lambda (point) (mapcar '+ point offset)) points))
   (bh:require
     (entmake '((0 . "BLOCK") (2 . "*U") (70 . 1) (10 0.0 0.0 0.0)))
     "无法创建标号块。")
@@ -204,7 +206,7 @@
               (mapcar '(lambda (p) (cons 10 (list (car p) (cadr p)))) points)))
     "无法创建标号折线。")
   (bh:require
-    (entmake (bh:attribute-data "ATTDEF" number '(0.0 0.0 0.0)
+    (entmake (bh:attribute-data "ATTDEF" number offset
                                height 0.0 '(0.0 0.0 1.0)))
     "无法创建编号属性定义。")
   (setq block (bh:record-write (entmake '((0 . "ENDBLK")))))
@@ -262,10 +264,24 @@
   found)
 
 ;;; Clone-on-edit: copied block references may share a definition.
+(defun bh:attribute-center (attribute / data)
+  (setq data (entget attribute))
+  (trans (cdr (assoc (if (and (= (cdr (assoc 72 data)) 0) (= (cdr (assoc 74 data)) 0)) 10 11) data)) attribute 0))
+
+;;; Convert WCS points to the INSERT's local frame, including rotation and scale.
+(defun bh:block-local (entity point / data relative angle sx sy sz)
+  (setq data (entget entity)
+        relative (mapcar '- (trans point 0 (cdr (assoc 210 data))) (cdr (assoc 10 data)))
+        angle (cdr (assoc 50 data)) sx (cdr (assoc 41 data))
+        sy (cdr (assoc 42 data)) sz (cdr (assoc 43 data)))
+  (list (/ (+ (* (car relative) (cos angle)) (* (cadr relative) (sin angle))) sx)
+        (/ (- (* (cadr relative) (cos angle)) (* (car relative) (sin angle))) sy)
+        (/ (caddr relative) sz)))
+
 (defun bh:replace-number (entity number)
   (bh:replace-label entity number nil))
 
-(defun bh:replace-label (entity number requested-style / data meta block attribute attrdata bh:label-style)
+(defun bh:replace-label (entity number requested-style / data meta block attribute attrdata height bh:label-style bh:label-offset bh:label-width)
   (bh:require (bh:label-p entity) "所选对象不是本插件创建的标号。")
   (bh:require (bh:identifier-p number) "编号只能包含数字或英文字母，最多32个字符。")
   (setq data (entget entity '("PATENT_LABEL"))
@@ -273,12 +289,17 @@
         attribute (bh:attribute entity))
   (bh:require attribute "标号的编号属性丢失。")
   (setq bh:label-style (if requested-style requested-style (cdr (assoc 7 (entget attribute)))))
+  (setq attrdata (entget attribute)
+        bh:label-offset (bh:block-local entity (bh:attribute-center attribute))
+        bh:label-width (cdr (assoc 41 attrdata))
+        height (/ (cdr (assoc 40 attrdata)) (abs (cdr (assoc 42 data)))))
   (bh:require (= (cdr (nth 0 meta)) "1") "标号数据版本不支持。")
   (bh:check-layer (cdr (assoc 8 data)))
   (bh:ensure-resources)
   (setq block (bh:make-definition (cdr (nth 1 meta)) number
-                                (cdr (nth 2 meta)) (cdr (nth 3 meta))
+                                height (cdr (nth 3 meta))
                                 (cdr (nth 4 meta))))
+  (setq data (subst (bh:metadata (cdr (nth 1 meta)) height (cdr (nth 3 meta)) (cdr (nth 4 meta))) (assoc -3 data) data))
   (bh:require (entmod (subst (cons 2 block) (assoc 2 data) data))
               "无法更新标号折线。")
   (setq attrdata (entget attribute))
@@ -287,6 +308,25 @@
               "无法更新编号文字。")
   (entupd entity)
   entity)
+
+(defun bh:move-label (entity center / attribute data original desired normal local delta)
+  (bh:require (bh:label-p entity) "请选择由 BH 创建的完整标号块。")
+  (bh:check-layer (cdr (assoc 8 (entget entity))))
+  (setq attribute (bh:attribute entity))
+  (bh:require attribute "标号的编号属性丢失。")
+  (setq data (entget attribute)
+        original (bh:attribute-center attribute)
+        normal (cdr (assoc 210 (entget entity)))
+        desired (trans center 1 normal)
+        local (cdr (assoc 10 (entget entity))))
+  ;; Keep the moved text on the original callout plane.
+  (setq desired (trans (list (car desired) (cadr desired) (caddr local)) normal 0)
+        delta (trans (mapcar '- desired original) 0 attribute T))
+  (foreach code '(10 11)
+    (if (assoc code data)
+      (setq data (subst (cons code (mapcar '+ (cdr (assoc code data)) delta)) (assoc code data) data))))
+  (bh:require (bh:record-write (entmod data)) "无法移动编号文字。")
+  (bh:replace-number entity (cdr (assoc 1 data))))
 
 ;;; A transaction is opened only after all interactive input is complete.
 ;;; Its caller binds undo-open locally so the error handler can roll back safely.
@@ -427,6 +467,23 @@
       (bh:end-undo)))
   (princ))
 
+(defun c:BHYD (/ *error* undo-open undo-dirty selection entity center)
+  (setq *error* bh:on-error)
+  (setq selection (entsel "\n选择要移动编号位置的标号（引线或数字）: "))
+  (if selection
+    (progn
+      (setq entity (car selection))
+      (if (= (cdr (assoc 0 (entget entity))) "ATTRIB")
+        (setq entity (cdr (assoc 330 (entget entity)))))
+      (bh:require (bh:label-p entity) "请选择由 BH 创建的完整标号块。")
+      (if (bh:ui-available-p)
+        (setq center (bh:point-result (bh:ui-move-label (cdr (assoc 5 (entget entity))))))
+        (setq center (getpoint (trans (bh:attribute-center (bh:attribute entity)) 0 1) "\n点取新的编号中心位置 <取消>: ")))
+      (if center
+        (progn (bh:begin-undo) (bh:move-label entity center) (bh:end-undo)))))
+  (bh:clear-preview)
+  (princ))
+
 (defun bh:ui-apply (handle number / *error* undo-open undo-dirty entity)
   (setq *error* bh:on-error entity (handent handle))
   (bh:require (bh:label-p entity) "标号已删除或不在当前图纸中。")
@@ -439,10 +496,11 @@
   (prompt "\nBH：单次标号；BHSZ：字高/折线/间隙/确认键/字重；BHXG：改号；BHJC：修改已有标号字重。")
   (prompt "\n确认编号即结束命令；再次空格/回车由 CAD 重复 BH，仍保留下一编号建议。U 在 CAD 命令行撤销。")
   (prompt "\n数字点击位置为中心；默认无箭头，左右自动折线；使用当前 UCS 平面和当前空间。")
+  (prompt "\nBHYD：移动编号并预览整条引线；拖动编号夹点或原生改字并结束命令后，引线自动同步。")
   (princ))
 
 (bh:sync-ui)
-(prompt "\n专利附图标号 0.2.4 已加载。输入 BH 开始，BHSZ 设置，BHHELP 查看帮助。")
+(prompt "\n专利附图标号 0.3.1 已加载。输入 BH 开始，BHSZ 设置，BHHELP 查看帮助。")
 (if (bh:ui-available-p)
   (prompt "\n整条折线随鼠标预览已启用；BHXG 在命令行修改编号。")
   (prompt "\n当前为基础模式；NETLOAD 加载配套 PatentLabel.UI.dll 可启用整条折线预览。"))

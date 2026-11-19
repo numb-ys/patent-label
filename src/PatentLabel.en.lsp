@@ -1,11 +1,11 @@
-;;; PatentLabel 0.3.0 - one callout per command, repeated by CAD's native Space/Enter.
+;;; PatentLabel 0.3.1 - one callout per command, repeated by CAD's native Space/Enter.
 ;;; ASCII English source, compatible with legacy and Unicode AutoLISP engines.
 ;;; Optional .NET UI supplies native drag preview; editing uses the command-line backend.
 ;;; No changes to OSNAP/UCS/security settings or global double-click bindings.
 
 (defun bh:ui-available-p ()
   (and (member "BH:UI-READY" (atoms-family 1 '("BH:UI-READY")))
-       (equal (bh:ui-ready) "0.3.0")))
+       (equal (bh:ui-ready) "0.3.1")))
 
 (defun bh:clear-preview ()
   (if (member "BH:UI-PREVIEW-CLEAR" (atoms-family 1 '("BH:UI-PREVIEW-CLEAR")))
@@ -160,7 +160,7 @@
 
 (defun bh:text-width (number height / box)
   (setq box (textbox (list '(0 . "TEXT") (cons 1 number)
-                          (cons 40 height) '(41 . 1.0) '(50 . 0.0)
+                          (cons 40 height) (cons 41 (if bh:label-width bh:label-width 1.0)) '(50 . 0.0)
                           (cons 7 (bh:text-style)))))
   (bh:require box "Could not measure the label. Check the text font.")
   (max (* height 0.15) (- (car (cadr box)) (caar box))))
@@ -191,9 +191,11 @@
           (cons 50 rotation) (cons 7 (bh:text-style)) (cons 210 normal)))
   (if (= kind "ATTDEF") (append data '((3 . "Label"))) data))
 
-(defun bh:make-definition (tip number height landing gap / points block)
-  (setq points (bh:geometry tip number height landing gap))
+(defun bh:make-definition (tip number height landing gap / points block offset)
+  (setq offset (if bh:label-offset bh:label-offset '(0.0 0.0 0.0)))
+  (setq points (bh:geometry (mapcar '- tip offset) number height landing gap))
   (bh:require points "The label is too close to the target point. Choose another label position.")
+  (setq points (mapcar '(lambda (point) (mapcar '+ point offset)) points))
   (bh:require
     (entmake '((0 . "BLOCK") (2 . "*U") (70 . 1) (10 0.0 0.0 0.0)))
     "Could not create the callout block.")
@@ -204,7 +206,7 @@
               (mapcar '(lambda (p) (cons 10 (list (car p) (cadr p)))) points)))
     "Could not create the callout leader.")
   (bh:require
-    (entmake (bh:attribute-data "ATTDEF" number '(0.0 0.0 0.0)
+    (entmake (bh:attribute-data "ATTDEF" number offset
                                height 0.0 '(0.0 0.0 1.0)))
     "Could not create the label attribute definition.")
   (setq block (bh:record-write (entmake '((0 . "ENDBLK")))))
@@ -262,10 +264,24 @@
   found)
 
 ;;; Clone-on-edit: copied block references may share a definition.
+(defun bh:attribute-center (attribute / data)
+  (setq data (entget attribute))
+  (trans (cdr (assoc (if (and (= (cdr (assoc 72 data)) 0) (= (cdr (assoc 74 data)) 0)) 10 11) data)) attribute 0))
+
+;;; Convert WCS points to the INSERT's local frame, including rotation and scale.
+(defun bh:block-local (entity point / data relative angle sx sy sz)
+  (setq data (entget entity)
+        relative (mapcar '- (trans point 0 (cdr (assoc 210 data))) (cdr (assoc 10 data)))
+        angle (cdr (assoc 50 data)) sx (cdr (assoc 41 data))
+        sy (cdr (assoc 42 data)) sz (cdr (assoc 43 data)))
+  (list (/ (+ (* (car relative) (cos angle)) (* (cadr relative) (sin angle))) sx)
+        (/ (- (* (cadr relative) (cos angle)) (* (car relative) (sin angle))) sy)
+        (/ (caddr relative) sz)))
+
 (defun bh:replace-number (entity number)
   (bh:replace-label entity number nil))
 
-(defun bh:replace-label (entity number requested-style / data meta block attribute attrdata bh:label-style)
+(defun bh:replace-label (entity number requested-style / data meta block attribute attrdata height bh:label-style bh:label-offset bh:label-width)
   (bh:require (bh:label-p entity) "The selected object is not a PatentLabel callout.")
   (bh:require (bh:identifier-p number) "Use 1-32 ASCII letters or digits for the label.")
   (setq data (entget entity '("PATENT_LABEL"))
@@ -273,12 +289,17 @@
         attribute (bh:attribute entity))
   (bh:require attribute "The callout NUMBER attribute is missing.")
   (setq bh:label-style (if requested-style requested-style (cdr (assoc 7 (entget attribute)))))
+  (setq attrdata (entget attribute)
+        bh:label-offset (bh:block-local entity (bh:attribute-center attribute))
+        bh:label-width (cdr (assoc 41 attrdata))
+        height (/ (cdr (assoc 40 attrdata)) (abs (cdr (assoc 42 data)))))
   (bh:require (= (cdr (nth 0 meta)) "1") "This callout data version is not supported.")
   (bh:check-layer (cdr (assoc 8 data)))
   (bh:ensure-resources)
   (setq block (bh:make-definition (cdr (nth 1 meta)) number
-                                (cdr (nth 2 meta)) (cdr (nth 3 meta))
+                                height (cdr (nth 3 meta))
                                 (cdr (nth 4 meta))))
+  (setq data (subst (bh:metadata (cdr (nth 1 meta)) height (cdr (nth 3 meta)) (cdr (nth 4 meta))) (assoc -3 data) data))
   (bh:require (entmod (subst (cons 2 block) (assoc 2 data) data))
               "Could not update the leader.")
   (setq attrdata (entget attribute))
@@ -287,6 +308,25 @@
               "Could not update the label text.")
   (entupd entity)
   entity)
+
+(defun bh:move-label (entity center / attribute data original desired normal local delta)
+  (bh:require (bh:label-p entity) "Select a complete callout block created by BH.")
+  (bh:check-layer (cdr (assoc 8 (entget entity))))
+  (setq attribute (bh:attribute entity))
+  (bh:require attribute "The callout NUMBER attribute is missing.")
+  (setq data (entget attribute)
+        original (bh:attribute-center attribute)
+        normal (cdr (assoc 210 (entget entity)))
+        desired (trans center 1 normal)
+        local (cdr (assoc 10 (entget entity))))
+  ;; Keep the moved text on the original callout plane.
+  (setq desired (trans (list (car desired) (cadr desired) (caddr local)) normal 0)
+        delta (trans (mapcar '- desired original) 0 attribute T))
+  (foreach code '(10 11)
+    (if (assoc code data)
+      (setq data (subst (cons code (mapcar '+ (cdr (assoc code data)) delta)) (assoc code data) data))))
+  (bh:require (bh:record-write (entmod data)) "Cannot move the label attribute.")
+  (bh:replace-number entity (cdr (assoc 1 data))))
 
 ;;; A transaction is opened only after all interactive input is complete.
 ;;; Its caller binds undo-open locally so the error handler can roll back safely.
@@ -427,6 +467,23 @@
       (bh:end-undo)))
   (princ))
 
+(defun c:BHYD (/ *error* undo-open undo-dirty selection entity center)
+  (setq *error* bh:on-error)
+  (setq selection (entsel "\nSelect a callout to reposition (leader or label): "))
+  (if selection
+    (progn
+      (setq entity (car selection))
+      (if (= (cdr (assoc 0 (entget entity))) "ATTRIB")
+        (setq entity (cdr (assoc 330 (entget entity)))))
+      (bh:require (bh:label-p entity) "Select a complete callout block created by BH.")
+      (if (bh:ui-available-p)
+        (setq center (bh:point-result (bh:ui-move-label (cdr (assoc 5 (entget entity))))))
+        (setq center (getpoint (trans (bh:attribute-center (bh:attribute entity)) 0 1) "\nPick the new label center <Cancel>: ")))
+      (if center
+        (progn (bh:begin-undo) (bh:move-label entity center) (bh:end-undo)))))
+  (bh:clear-preview)
+  (princ))
+
 (defun bh:ui-apply (handle number / *error* undo-open undo-dirty entity)
   (setq *error* bh:on-error entity (handent handle))
   (bh:require (bh:label-p entity) "The callout was deleted or is not in the current drawing.")
@@ -439,10 +496,11 @@
   (prompt "\nBH: create one callout. BHSZ: height/landing/gap/confirmation/weight. BHXG: edit label. BHJC: change label font and weight.")
   (prompt "\nConfirm the label to finish. Press Space/Enter again to repeat BH with the next suggested label. Use U at the command prompt to undo.")
   (prompt "\nThe second point is the label center. No arrowhead; the leader bends left/right automatically. Uses the current UCS and space.")
+  (prompt "\nBHYD: reposition a label with full leader preview. Native attribute moves/edits update the leader when the command finishes.")
   (princ))
 
 (bh:sync-ui)
-(prompt "\nPatentLabel 0.3.0 loaded (English). Type BH to start, BHSZ for settings, BHHELP for help.")
+(prompt "\nPatentLabel 0.3.1 loaded (English). Type BH to start, BHSZ for settings, BHHELP for help.")
 (if (bh:ui-available-p)
   (prompt "\nFull leader preview is enabled. Use BHXG to edit labels at the command line.")
   (prompt "\nBasic mode. NETLOAD the matching PatentLabel assembly to enable full leader preview."))

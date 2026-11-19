@@ -4,7 +4,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>PatentLabel.UI</AssemblyName>
-    <Version>0.2.4</Version>
+    <Version>0.3.1</Version>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../..'))=/_/PatentLabel</PathMap>
     <PlatformTarget>x64</PlatformTarget>
     <AutoCADDir Condition="'$(AutoCADDir)' == ''">D:\Program Files\AutoCAD 2026</AutoCADDir>
     <EnableDynamicLoading>true</EnableDynamicLoading>

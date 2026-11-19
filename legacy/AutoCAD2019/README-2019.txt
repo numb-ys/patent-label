@@ -1,4 +1,4 @@
-﻿专利附图标号：AutoCAD 2019 测试版 0.2.4-2019
+﻿专利附图标号：AutoCAD 2019 测试版 0.3.1-2019
 
 适用：Windows 版完整 AutoCAD 2019，32 位或 64 位。
 不适用于 AutoCAD LT 2019、中望或浩辰。
@@ -10,7 +10,7 @@
 2. 打开 AutoCAD 2019 的任意图纸，结束当前命令或对话框。
 3. 双击 Install2019.cmd。看到“Installed: PatentLabel AutoCAD 2019”即完成。
 4. 保存当前工作后，退出并重新启动 CAD 2019。
-5. 命令行出现“专利附图标号 0.2.4-2019 已加载”，输入 BH 使用。
+5. 命令行出现“专利附图标号 0.3.1-2019 已加载”，输入 BH 使用。
 
 只需安装一次。打开其它图纸时会自动加载。
 安装使用 Windows 自带的 PowerShell，支持 2.0 及以后版本，不需要管理员权限。
@@ -35,7 +35,7 @@ Esc 取消本条，U 或 Ctrl+Z 撤销。旧标号和复制件可独立改号。
 先确认运行的是完整版 AutoCAD 2019、已打开图纸、没有未结束的命令。
 保留安装窗口中的报错文字。若已安装但没有预览，输入 BHVER 查看模块状态。
 临时手动加载：NETLOAD 选择解压包内
-PatentLabel2019.bundle\Contents\Windows\PatentLabel.UI2019.0.2.4.2019.dll。
+PatentLabel2019.bundle\Contents\Windows\PatentLabel.UI2019.0.3.1.2019.dll。
 同目录的 PatentLabel2019.lsp 应自动加载；若没有，再 APPLOAD 加载该 LSP。
 不要更改或用记事本另存 LSP：它使用中文 Windows 环境下 CAD 2019 所需的 GBK 编码。
 
@@ -51,3 +51,7 @@ SDK 参考文件仅用于编译，没有打包到此安装包中。
 官方参考包：https://www.nuget.org/packages/AutoCAD.NET.Core/23.0.0
 编译通过、旧编码后端检查及安装脚本检查，不等于 CAD 2019 的实机测试通过。
 实际鼠标预览、第二次点击后预览保留、安装自启动、改号及保存重开请按 TEST-2019.txt 检查。
+
+新增 BHYD：移动编号时预览整条引线，点击确定，指向零件的一端保持原位。
+原生改字或拖动编号属性夹点，结束 CAD 当前命令后自动同步引线；复制件独立。
+完整旧标号无需重画，炸开后的对象没有关联；必须加载配套 DLL。

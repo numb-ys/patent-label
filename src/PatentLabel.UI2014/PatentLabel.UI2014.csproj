@@ -5,7 +5,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <AssemblyName>PatentLabel.UI2014</AssemblyName>
-    <Version>0.2.4.2014</Version>
+    <Version>0.3.1.2014</Version>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../..'))=/_/PatentLabel</PathMap>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <Prefer32Bit>false</Prefer32Bit>
     <AutoCAD2014RefDir Condition="'$(AutoCAD2014RefDir)' == ''">$(MSBuildThisFileDirectory)..\..\artifacts\sdk2014\refs</AutoCAD2014RefDir>

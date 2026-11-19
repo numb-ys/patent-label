@@ -1,6 +1,6 @@
 # PatentLabel English user guide
 
-English preview release 0.3.0. For Windows full AutoCAD 2014, 2019 or 2026.
+English preview release 0.3.1. For Windows full AutoCAD 2014, 2019 or 2026.
 Use the ZIP built for your exact AutoCAD year. AutoCAD LT, macOS and other CAD products are not supported by these packages.
 
 ## Install once
@@ -29,13 +29,14 @@ Labels contain 1-32 ASCII letters or digits. Examples: 123, A, a, A01 and 12A. T
 ## Edit labels and settings
 
 - BHXG: select a callout, type its replacement label at the command line and confirm. The leader gap is recalculated. A copied callout can be edited independently.
+- BHYD: select a callout, move the mouse to preview the whole leader, then click the new label center. The target on the part stays fixed. Esc cancels the move.
 - BHSZ: set label height, horizontal landing length, text gap, confirmation key and weight. Press Enter at a setting to keep its value. New English labels use Arial Regular by default.
 - BHJC: select existing callouts and choose Bold or Regular. Selected labels are changed to Arial; leader lineweight stays unchanged.
 - BHVER: show the edition, AutoCAD version, preview-module status and Arial font lookup.
 - BHHELP: display command help.
 - Esc cancels the current operation. At the first or second point prompt, Enter finishes or cancels the callout. Use U or Ctrl+Z to undo a completed operation.
 
-Double-clicking a label uses AutoCAD's built-in attribute editor. Finish with that editor's normal OK/Close action. For a label change that also adjusts the leader, use BHXG.
+Double-clicking a label uses AutoCAD's built-in attribute editor. Finish with its normal OK/Close action; the leader gap then updates. Moving the NUMBER attribute grip updates the leader when that native command finishes. Use BHYD to see the leader follow during the move. Moving the whole block moves the whole callout. Existing PatentLabel blocks are supported; exploded objects are not linked. These features require the matching managed DLL to be loaded.
 
 ## Troubleshooting and removal
 
@@ -48,7 +49,7 @@ Double-clicking a label uses AutoCAD's built-in attribute editor. Finish with th
 
 ## Trial checklist
 
-Try a blank drawing first. Check startup/new-drawing loading, both click positions, preview retention, accepting 1 without typing, Space-to-repeat, letters, copied-callout editing, undo, and saving/reopening a DWG.
+Try a blank drawing first. Check startup/new-drawing loading, both click positions, preview retention, accepting 1, Space-to-repeat, letters, attribute-grip movement, BHYD preview, copied-callout independence, one-step undo, and saving/reopening a DWG.
 
 The 2014 and 2019 packages are compiled against their supported APIs but need testing in those actual releases. Core Console checks on 2026 do not establish compatibility with another AutoCAD release or prove desktop mouse behavior. An English Windows/AutoCAD desktop still needs user verification.
 

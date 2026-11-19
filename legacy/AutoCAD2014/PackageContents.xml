@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ApplicationPackage SchemaVersion="1.0" AppVersion="0.2.4.2014"
+<ApplicationPackage SchemaVersion="1.0" AppVersion="0.3.1.2014"
                     AutodeskProduct="AutoCAD" ProductType="Application"
                     Name="PatentLabel2014" Author="PatentLabel"
                     Description="Patent callouts for AutoCAD 2014"
@@ -9,7 +9,7 @@
     <RuntimeRequirements OS="Win32|Win64" Platform="AutoCAD" SeriesMin="R19.1" SeriesMax="R19.1" />
     <ComponentEntry AppName="PatentLabel.UI2014" AppType=".Net"
                     AppDescription="Patent callout preview for AutoCAD 2014"
-                    ModuleName="./Contents/Windows/PatentLabel.UI2014.0.2.4.2014.dll"
+                    ModuleName="./Contents/Windows/PatentLabel.UI2014.0.3.1.2014.dll"
                     LoadOnAutoCADStartup="True" />
   </Components>
 </ApplicationPackage>
