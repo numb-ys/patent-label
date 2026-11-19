@@ -1,0 +1,33 @@
+name: Build and source checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  english:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        year: [2019, 2026]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Source and localization checks
+        run: python -m unittest discover -s tests -p "test_public*.py" -v
+      - name: Build installable English package
+        run: python scripts/package_english.py --year ${{ matrix.year }}
+      - name: Installer checks with fake CAD documents
+        shell: powershell
+        run: tests/test_english_installer.ps1 -Year ${{ matrix.year }} -PackageDirectory "build/packages/PatentLabel-AutoCAD${{ matrix.year }}-0.3.0-en"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PatentLabel-English-${{ matrix.year }}
+          path: dist/*-en.zip

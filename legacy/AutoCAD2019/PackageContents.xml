@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ApplicationPackage SchemaVersion="1.0" AppVersion="0.2.4.2019"
+                    AutodeskProduct="AutoCAD" ProductType="Application"
+                    Name="PatentLabel2019" Author="PatentLabel"
+                    Description="Patent callouts for AutoCAD 2019"
+                    ProductCode="{ADB4DE6C-B867-4BBC-A3F6-862C78387076}"
+                    UpgradeCode="{7C725465-69E5-42B2-86FD-8DF2E6A90A5E}">
+  <Components>
+    <RuntimeRequirements OS="Win32|Win64" Platform="AutoCAD" SeriesMin="R23.0" SeriesMax="R23.0" />
+    <ComponentEntry AppName="PatentLabel.UI2019" AppType=".Net"
+                    AppDescription="Patent callout preview for AutoCAD 2019"
+                    ModuleName="./Contents/Windows/PatentLabel.UI2019.0.2.4.2019.dll"
+                    LoadOnAutoCADStartup="True" />
+  </Components>
+</ApplicationPackage>

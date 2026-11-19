@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net40</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>PatentLabel.English2014</AssemblyName>
+    <Version>0.3.0.2014</Version>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../..'))=/_/PatentLabel</PathMap>
+    <AutoCAD2014RefDir Condition="'$(AutoCAD2014RefDir)' == ''">$(MSBuildThisFileDirectory)../../artifacts/sdk2014/refs</AutoCAD2014RefDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../build/english/2014/*.cs" />
+    <Reference Include="System.Web.Extensions" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net40" Version="1.0.3" PrivateAssets="All" />
+    <Reference Include="AcCoreMgd"><HintPath>$(AutoCAD2014RefDir)/AcCoreMgd.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="AcDbMgd"><HintPath>$(AutoCAD2014RefDir)/AcDbMgd.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+</Project>

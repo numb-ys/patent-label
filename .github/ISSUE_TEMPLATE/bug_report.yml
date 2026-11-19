@@ -1,0 +1,35 @@
+name: Bug report
+description: Report a reproducible PatentLabel problem
+body:
+  - type: markdown
+    attributes:
+      value: Please use a blank or shareable drawing. Do not upload confidential patent or client material.
+  - type: input
+    id: cad
+    attributes:
+      label: AutoCAD year and update
+      placeholder: AutoCAD 2019, update number, 32-bit or 64-bit
+    validations:
+      required: true
+  - type: input
+    id: edition
+    attributes:
+      label: Package version and language
+      placeholder: 0.3.0-en-2019
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Windows and BHVER output
+      description: Include Windows version/language and the complete BHVER output if available.
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps and expected versus actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: Error text or screenshot

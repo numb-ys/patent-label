@@ -1,0 +1,14 @@
+* text=auto
+*.cs text eol=lf
+*.csproj text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+# Preserve legacy GBK LSP bytes as well as ASCII/UTF-8 LSP source files.
+*.lsp -text whitespace=cr-at-eol
+*.pdf binary
+*.zip binary
+*.svg text eol=lf

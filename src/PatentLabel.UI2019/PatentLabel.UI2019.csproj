@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net47</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>PatentLabel.UI2019</AssemblyName>
+    <Version>0.2.4.2019</Version>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.3" PrivateAssets="All" />
+    <PackageReference Include="AutoCAD.NET.Core" Version="[23.0.0]" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="AutoCAD.NET.Model" Version="[23.0.0]" PrivateAssets="All" ExcludeAssets="runtime" />
+    <Reference Include="System.Web.Extensions" />
+  </ItemGroup>
+</Project>

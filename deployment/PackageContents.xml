@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ApplicationPackage SchemaVersion="1.0" AppVersion="0.2.4"
+                    Name="PatentLabel" Author="PatentLabel"
+                    Description="Continuous patent drawing callouts"
+                    ProductCode="{8B0F3B60-D8F1-4C1B-84CE-C24A6025C691}"
+                    UpgradeCode="{964206D2-4C30-4B70-A39D-AECF4AE15318}">
+  <Components>
+    <RuntimeRequirements OS="Win64" Platform="AutoCAD" SeriesMin="R25.1" SeriesMax="R25.1" />
+    <ComponentEntry AppName="PatentLabel.UI" AppDescription="Patent callout preview and stable command-line editing"
+                    AppType=".Net" ModuleName="./Contents/Windows/PatentLabel.UI.0.2.4.dll">
+      <LoadReasons LoadOnAutoCADStartup="True" LoadOnAppearance="False"
+                   LoadOnCommandInvocation="False" LoadOnProxy="False" />
+    </ComponentEntry>
+  </Components>
+</ApplicationPackage>

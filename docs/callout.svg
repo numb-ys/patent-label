@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="230" viewBox="0 0 800 230" role="img" aria-labelledby="title desc">
+  <title id="title">PatentLabel two-click callout</title>
+  <desc id="desc">Click the target on a part, then the center of its label. Confirm the label, then press Space again for another callout.</desc>
+  <rect width="800" height="230" rx="12" fill="#f6f8fa"/>
+  <g fill="none" stroke="#24292f" stroke-width="2.5"><rect x="72" y="88" width="225" height="85" rx="8"/><circle cx="119" cy="131" r="16"/><path d="M222 105 L379 52 L449 52"/></g>
+  <circle cx="222" cy="105" r="4" fill="#0969da"/>
+  <text x="474" y="62" font-family="Arial,sans-serif" font-size="32" text-anchor="middle">1</text>
+  <g font-family="Arial,sans-serif" font-size="16" fill="#24292f"><text x="72" y="55">1. Click the leader target</text><text x="439" y="105">2. Click the label center</text><text x="72" y="207">Space: confirm and finish</text><text x="439" y="207">Space again: next callout</text></g>
+</svg>

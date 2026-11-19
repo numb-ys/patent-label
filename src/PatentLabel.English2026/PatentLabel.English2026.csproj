@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>PatentLabel.English2026</AssemblyName>
+    <Version>0.3.0.2026</Version>
+    <PlatformTarget>x64</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../..'))=/_/PatentLabel</PathMap>
+    <AutoCAD2014RefDir Condition="'$(AutoCAD2014RefDir)' == ''">$(MSBuildThisFileDirectory)../../artifacts/sdk2014/refs</AutoCAD2014RefDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../build/english/2026/*.cs" />
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
+    <PackageReference Include="AutoCAD.NET.Core" Version="[25.1.0]" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="AutoCAD.NET.Model" Version="[25.1.0]" PrivateAssets="All" ExcludeAssets="runtime" />
+  </ItemGroup>
+</Project>

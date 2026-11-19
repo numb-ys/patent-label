@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net47</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>PatentLabel.English2019</AssemblyName>
+    <Version>0.3.0.2019</Version>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../..'))=/_/PatentLabel</PathMap>
+    <AutoCAD2014RefDir Condition="'$(AutoCAD2014RefDir)' == ''">$(MSBuildThisFileDirectory)../../artifacts/sdk2014/refs</AutoCAD2014RefDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../build/english/2019/*.cs" />
+    <Reference Include="System.Web.Extensions" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net47" Version="1.0.3" PrivateAssets="All" />
+    <PackageReference Include="AutoCAD.NET.Core" Version="[23.0.0]" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="AutoCAD.NET.Model" Version="[23.0.0]" PrivateAssets="All" ExcludeAssets="runtime" />
+  </ItemGroup>
+</Project>
