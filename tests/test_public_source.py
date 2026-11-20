@@ -35,7 +35,7 @@ class PublicSourceChecks(unittest.TestCase):
                 content = (generated / name).read_text(encoding="ascii")
                 self.assertTrue(content.isascii())
             backend = (generated / "PatentLabel.lsp").read_text(encoding="ascii")
-            self.assertIn(f"0.3.2-en-{year}", backend)
+            self.assertIn(f"0.4.0-en-{year}", backend)
             self.assertIn("c:BHVER", backend)
         self.assertEqual(before, {p: p.read_bytes() for p in paths})
 
@@ -56,7 +56,7 @@ class PublicSourceChecks(unittest.TestCase):
     def test_license_and_docs(self):
         self.assertIn("MIT License", (ROOT / "LICENSE").read_text(encoding="ascii"))
         guide = (ROOT / "docs/USER_GUIDE_EN.md").read_text(encoding="ascii")
-        for word in ("Install.cmd", "Uninstall.cmd", "BHVER", "Space again", "2014", "2019", "2026"):
+        for word in ("Install.cmd", "Uninstall.cmd", "BHVER", "next part", "Esc", "2014", "2019", "2026"):
             self.assertIn(word, guide)
         self.assertNotIn("C:\\Users\\", guide)
 

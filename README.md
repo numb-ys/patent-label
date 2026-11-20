@@ -4,13 +4,13 @@
 
 Two-click reference callouts for patent drawings in AutoCAD. Pick the leader target, pick the label position, then accept or type a label. PatentLabel previews the full leader, suggests the next identifier and keeps each callout as an ordinary block with a `NUMBER` attribute.
 
-See two-click placement and automatic numbering in the [33-second AutoCAD demo (MP4)](docs/patent-label-demo.mp4).
+See two-click placement in the [33-second AutoCAD demo, recorded with 0.3.2 (MP4)](docs/patent-label-demo.mp4).
 
 ![Two clicks define the leader target and label position](docs/callout.svg)
 
 ## Download and install
 
-Get a ZIP for your exact AutoCAD year and language from [Releases](https://github.com/numb-ys/patent-label/releases). Version 0.3.2 includes English and Chinese packages for all three supported years. English labels use Arial from your Windows installation.
+Get a ZIP for your exact AutoCAD year and language from [Releases](https://github.com/numb-ys/patent-label/releases). Version 0.4.0 includes English and Chinese packages for all three supported years. English labels use Arial from your Windows installation.
 
 1. Extract the entire ZIP.
 2. Open the matching AutoCAD version and a drawing. Finish any active command.
@@ -23,20 +23,21 @@ Read the [English user guide](docs/USER_GUIDE_EN.md) or the [PDF manual](docs/US
 
 ## Workflow
 
-1. Type `BH` and press Enter.
+1. Type `BH` and press Space or Enter.
 2. Click the point on the part that the leader identifies.
 3. Move the cursor to preview the whole leader and label. Click the label center.
-4. The first label defaults to `1`. Press Space/Enter to accept it, or type a replacement. The command ends.
-5. Press Space again to repeat `BH`, retaining the next suggested label.
+4. The second click places the suggested label, starting with `1`. Click the next part immediately, then its label position, to place `2`, `3` and so on.
+5. To change a label, type its replacement after the second click and press Space/Enter. Then click the next part directly.
+6. Press Esc to finish. Placed callouts, including the last default label, remain. Esc after only the target click cancels that unfinished leader.
 
-The first Space confirms the current callout; the second is AutoCAD's normal command repeat. If another command runs in between, type `BH` again.
+No confirmation spaces are needed between pairs of clicks. A Space without text accepts the default and keeps waiting for the next target. After exiting, use `U` to undo one callout at a time.
 
 Labels accept 1-32 ASCII letters/digits, including `123`, `A`, `a`, `A01` and `12A`. Suggestions preserve leading zeros and prefixes: `001 -> 002`, `A99 -> A100`, `Z -> AA`. No drawing-wide duplicate detection or collision avoidance is implemented.
 
 | Command | Purpose |
 | --- | --- |
-| `BH` | Create one callout with a two-segment leader |
-| `BHSZ` | Set height, landing length, gap, confirmation key and weight |
+| `BH` | Place continuous two-click callouts; Esc finishes |
+| `BHSZ` | Set height, landing length, gap, BHXG confirmation key and weight |
 | `BHXG` | Edit a label at the command line and recalculate the leader gap |
 | `BHYD` | Move the label with a full leader preview, keeping the target fixed |
 | `BHJC` | Apply the edition's font and Bold/Regular weight to selected callouts |
@@ -57,7 +58,7 @@ These are Windows **full AutoCAD** plug-ins. LT, macOS, ZWCAD, GstarCAD and unli
 | 2019 | .NET Framework 4.7, 23.0 API | AnyCPU, 32/64-bit target | Compiled; actual 2019 desktop testing required |
 | 2026 | .NET 8, 25.1 API | x64 | Core Console regression/interop checks; desktop testing required |
 
-Automated checks use isolated Core Console settings and temporary drawing copies. They cover geometry, label defaults/increments, native Space repetition, fonts, preview objects, edits, copies, undo, UCS and save/reopen behavior. They do not automate mouse interaction or demonstrate that every native CAD crash has been eliminated. An English Windows/AutoCAD desktop still needs verification.
+Automated checks use isolated Core Console settings and temporary drawing copies. They cover continuous native point/text input, label increments, Esc, per-callout undo, fonts, preview objects, edits, copies, UCS and save/reopen behavior. They do not automate desktop mouse interaction. An English Windows/AutoCAD desktop still needs verification.
 
 Use only one language edition per AutoCAD year. Installing another edition updates the same owned bundle; restart before use. Do not NETLOAD both DLLs into one process.
 

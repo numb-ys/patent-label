@@ -6,7 +6,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <AssemblyName>PatentLabel.English2026</AssemblyName>
-    <Version>0.3.2.2026</Version>
+    <Version>0.4.0.2026</Version>
     <PlatformTarget>x64</PlatformTarget>
     <Prefer32Bit>false</Prefer32Bit>
     <DebugType>none</DebugType>

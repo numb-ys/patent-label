@@ -1,11 +1,11 @@
-;;; PatentLabel 0.3.2-2014 - one callout per command, repeated by CAD's native Space/Enter.
+;;; PatentLabel 0.4.0-2014 - continuous two-click callouts, keyboard labels or next target clicks.
 ;;; AutoCAD 2014: CP936/GBK source, no UTF-8 BOM or LISPSYS dependency.
 ;;; Optional .NET UI supplies native drag preview; editing uses the command-line backend.
 ;;; No changes to OSNAP/UCS/security settings or global double-click bindings.
 
 (defun bh:ui-available-p ()
   (and (member "BH:UI-READY" (atoms-family 1 '("BH:UI-READY")))
-       (equal (bh:ui-ready) "0.3.2-2014")))
+       (equal (bh:ui-ready) "0.4.0-2014")))
 
 (defun bh:clear-preview ()
   (if (member "BH:UI-PREVIEW-CLEAR" (atoms-family 1 '("BH:UI-PREVIEW-CLEAR")))
@@ -121,6 +121,30 @@
       (setq done T)
       (prompt "\n请输入数字或英文字母，例如 123、A、A01；最多32个字符，不接受空编号或空格。")))
   value)
+
+;;; Native mixed input preserves OSNAP/UCS. Bit 128 gives identifiers priority over
+;;; direct-distance input, so 123/001/A01 are strings and a picked point is a list.
+(defun bh:read-number-or-target (suggestion target center settings / value done)
+  (while (not done)
+    (initget 128)
+    (setq awaiting-native-input T)
+    (setq value
+      (getpoint
+        (strcat "\n当前编号 <" suggestion ">：输入新编号后空格/Enter 确认，或直接点下一处指向点；Esc 结束: ")))
+    (setq awaiting-native-input nil)
+    (cond
+      ((or (null value) (equal value "") (listp value)) (setq done T))
+      ((not (bh:identifier-p value))
+        (prompt "\n请输入数字或英文字母，例如 123、A、A01；最多32个字符，不接受空编号或空格。"))
+      ((not (bh:geometry (mapcar '- target center) value
+                         (nth 0 settings) (nth 1 settings) (nth 2 settings)))
+        (prompt "\n新编号会遮挡引线指向点，请输入较短编号，或按空格保留当前编号。"))
+      (T (setq done T))))
+  value)
+
+(defun bh:remember-number (number)
+  (setq bh:next (bh:increment number))
+  (if (> (strlen bh:next) 32) (setq bh:next nil)))
 
 (defun bh:require (value message)
   (if (not value) (progn (prompt (strcat "\n" message)) (exit)))
@@ -328,8 +352,8 @@
   (bh:require (bh:record-write (entmod data)) "无法移动编号文字。")
   (bh:replace-number entity (cdr (assoc 1 data))))
 
-;;; A transaction is opened only after all interactive input is complete.
-;;; Its caller binds undo-open locally so the error handler can roll back safely.
+;;; A callout's placement and optional number replacement share one undo group.
+;;; The caller binds undo-open locally so cancellation can close or roll back it.
 (defun bh:begin-undo ()
   ; AutoCAD's automatic command group can already set bit 8 here.
   ; Explicit Begin is required to split repeated labels into separate groups.
@@ -358,17 +382,39 @@
     (prompt (strcat "\n标号未完成：" message)))
   (princ))
 
-(defun c:BH (/ *error* undo-open undo-dirty target center number settings points running suggestion)
-  (setq *error* bh:on-error running T settings (bh:settings)
-        suggestion (if (bh:identifier-p bh:next) bh:next "1"))
-  (prompt "\n单次标号：指向点 -> 编号位置 -> 输入编号 -> 确认结束；再次按空格由 CAD 重复 BH。")
-  (while running
-    (initget "Settings")
-    (setq target (getpoint "\n点取引线指向点 [设置(Settings)] <结束>: "))
+;;; A cancelled point preview rolls back only that unfinished placement. A placed
+;;; default is already a complete callout: Esc closes its undo group and keeps it.
+(defun bh:on-continuous-error (message / cancelled)
+  (setq cancelled (or awaiting-native-input
+                     (wcmatch (strcase message) "*CANCEL*,*QUIT*,*BREAK*,*取消*,*退出*")))
+  (bh:clear-preview)
+  (if undo-open
+    ;; During mixed input the default is complete and no edits are in flight.
+    ;; Preserve it even when the host's localized cancellation text is unknown.
+    (if keep-on-cancel
+      (progn (bh:end-undo) (bh:remember-number number))
+      (progn (bh:rollback) (setq bh:next previous-next))))
+  (redraw)
+  (if (not cancelled) (prompt (strcat "\n标号未完成：" message)))
+  (princ))
+
+(defun c:BH (/ *error* undo-open undo-dirty target center number settings points suggestion
+              entity response keep-on-cancel previous-next awaiting-native-input)
+  (setq *error* bh:on-continuous-error settings (bh:settings))
+  (prompt "\n连续标号：点指向点 -> 点编号位置；可输入编号后空格确认，或直接点下一处；Esc 结束并保留已放好的标号。")
+  (while T
+    (setq suggestion (if (bh:identifier-p bh:next) bh:next "1"))
+    (if (null target)
+      (progn
+        (initget "Settings")
+        (setq awaiting-native-input T
+              target (getpoint "\n点取引线指向点 [设置(Settings)]，Esc 结束: ")
+              awaiting-native-input nil)))
     (cond
-      ((null target) (setq running nil))
-      ((equal target "Settings") (c:BHSZ) (setq settings (bh:settings)))
+      ((null target) nil)
+      ((equal target "Settings") (c:BHSZ) (setq settings (bh:settings) target nil))
       (T
+        (setq previous-next bh:next keep-on-cancel nil number suggestion)
         (if (bh:ui-available-p)
           (progn
             (bh:begin-undo)
@@ -376,10 +422,11 @@
             (setq center (bh:point-result
               (bh:ui-place target suggestion
                            (nth 0 settings) (nth 1 settings) (nth 2 settings)))))
-          (setq center (getpoint target "\n点取数字中心位置 <取消本条>: ")))
+          (setq awaiting-native-input T
+                center (getpoint target "\n点取数字中心位置 <取消本条>: ")
+                awaiting-native-input nil))
         (if center
           (progn
-            (setq number (bh:read-number suggestion))
             (if (not undo-open) (bh:begin-undo))
             (bh:ensure-resources)
             (setq points (bh:geometry
@@ -388,15 +435,22 @@
                     number (nth 0 settings) (nth 1 settings) (nth 2 settings)))
             (if points
               (progn
-                (bh:make-label target center number settings)
+                (setq entity (bh:make-label target center number settings) keep-on-cancel T)
+                (bh:clear-preview)
+                (setq response (bh:read-number-or-target number target center settings))
+                (if (and (eq (type response) 'STR) (not (equal response "")))
+                  (progn
+                    (setq keep-on-cancel nil)
+                    (if (not (equal response number)) (bh:replace-number entity response))
+                    (setq number response)))
                 (bh:end-undo)
-                (setq bh:next (bh:increment number))
-                (if (> (strlen bh:next) 32) (setq bh:next nil))
-                (setq running nil))
+                (bh:remember-number number)
+                (setq keep-on-cancel nil target (if (listp response) response nil)))
               (progn
                 (bh:rollback)
+                (setq target nil)
                 (prompt "\n数字位置离指向点太近，本条未生成，请重新点取。"))))
-          (progn (if undo-open (bh:rollback)) (setq running nil))))))
+          (progn (if undo-open (bh:rollback)) (setq target nil))))))
   (princ))
 
 (defun c:BHSZ (/ values height landing gap confirm weight)
@@ -409,7 +463,7 @@
   (setq gap (getreal (strcat "\n引线与数字间隙 <" (rtos (nth 2 values) 2 3) ">: ")))
   (initget "Space Enter")
   (setq confirm
-    (getkword (strcat "\n编号确认键 [空格或回车(Space)/仅回车(Enter)] <"
+    (getkword (strcat "\nBHXG 改号确认键 [空格或回车(Space)/仅回车(Enter)] <"
                      (if (bh:enter-only-p) "Enter" "Space") ">: ")))
   (initget "Bold Regular")
   (setq weight (getkword
@@ -493,20 +547,20 @@
   (princ))
 
 (defun c:BHHELP ()
-  (prompt "\nBH：单次标号；BHSZ：字高/折线/间隙/确认键/字重；BHXG：改号；BHJC：修改已有标号字重。")
-  (prompt "\n确认编号即结束命令；再次空格/回车由 CAD 重复 BH，仍保留下一编号建议。U 在 CAD 命令行撤销。")
+  (prompt "\nBH：连续标号；BHSZ：字高/折线/间隙/改号确认键/字重；BHXG：改号；BHJC：修改已有标号字重。")
+  (prompt "\n第二次点击后编号已放好；输入新编号后空格/Enter 确认，或直接点下一处指向点；Esc 结束，退出后 U 逐条撤销。")
   (prompt "\n数字点击位置为中心；默认无箭头，左右自动折线；使用当前 UCS 平面和当前空间。")
   (prompt "\n单击标号，拖动编号中心的蓝色夹点，整条引线实时跟随，零件端不动；BHYD 也可移动编号。")
   (princ))
 
 (defun c:BHVER ()
-  (prompt (strcat "\nPatentLabel 0.3.2-2014 | CAD " (getvar "ACADVER")))
+  (prompt (strcat "\nPatentLabel 0.4.0-2014 | CAD " (getvar "ACADVER")))
   (prompt (if (bh:ui-available-p) "\n2014 预览模块：已加载。" "\n2014 预览模块：未加载，当前为基础模式。"))
   (prompt (strcat "\n黑体文件：" (if (findfile "simhei.ttf") (findfile "simhei.ttf") "未找到")))
   (princ))
 
 (bh:sync-ui)
-(prompt "\n专利附图标号 0.3.2-2014 已加载。输入 BH 开始，BHSZ 设置，BHHELP 查看帮助。")
+(prompt "\n专利附图标号 0.4.0-2014 已加载。输入 BH 开始，BHSZ 设置，BHHELP 查看帮助。")
 (if (bh:ui-available-p)
   (prompt "\n整条折线随鼠标预览已启用；BHXG 在命令行修改编号。")
   (prompt "\n当前为基础模式；NETLOAD 加载配套 PatentLabel.UI2014.dll 可启用整条折线预览。"))

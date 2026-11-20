@@ -47,12 +47,12 @@ public sealed class Interaction : IExtensionApplication
     }
 
     [LispFunction("bh:ui-ready")]
-    public static string Ready(ResultBuffer? arguments) => "0.3.2";
+    public static string Ready(ResultBuffer? arguments) => "0.4.0";
 
     [LispFunction("bh:ui-state")]
     public static string State(ResultBuffer? arguments) => JsonSerializer.Serialize(new
     {
-        version = "0.3.2", inlineEditingEnabled = false,
+        version = "0.4.0", inlineEditingEnabled = false,
         defaultBold = boldSetting, leaderFollowEnabled = true,
         followedEdits = LabelAttachmentMonitor.Updated, followError = LabelAttachmentMonitor.LastError,
         nativeGripFollowEnabled = true, gripSamples = LabelGripEditing.Samples, gripDraws = LabelGripEditing.Draws,

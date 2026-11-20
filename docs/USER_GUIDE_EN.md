@@ -1,6 +1,6 @@
 # PatentLabel English user guide
 
-English preview release 0.3.2. For Windows full AutoCAD 2014, 2019 or 2026.
+English preview release 0.4.0. For Windows full AutoCAD 2014, 2019 or 2026.
 Use the ZIP built for your exact AutoCAD year. AutoCAD LT, macOS and other CAD products are not supported by these packages.
 
 ## Install once
@@ -15,14 +15,15 @@ After installation, the plug-in loads at startup and when you open another drawi
 
 ## Make a callout
 
-1. Type BH and press Enter.
+1. Type BH and press Space or Enter.
 2. Click the point on the part that the leader should identify.
 3. Move the mouse. The whole two-segment leader and suggested label follow the cursor.
-4. Click the desired center of the label. The preview stays visible while you enter the label.
-5. Accept the first suggested label, 1, with Space or Enter, or type another label first. This finishes the command.
-6. Press Space again to start another callout with the next suggested label.
+4. Click the label center. The suggested label, starting with 1, is now placed and visible.
+5. To keep it, click the next part immediately, then its label position. Numbering increments automatically, with no confirmation spaces needed.
+6. To change it, type digits or letters and press Space/Enter, then click the next part directly.
+7. Press Esc to finish. The last placed label remains. Esc after only the first click cancels that unfinished leader.
 
-The two Space presses have separate jobs: the first confirms the current label; the second uses AutoCAD's normal repeat-command behavior. If you run another command in between, type BH again.
+Space without text accepts the suggested label and keeps waiting for the next target. After Esc, use U or Ctrl+Z to undo placed callouts one at a time. BH now continues until Esc; no command-repeat step is needed.
 
 Labels contain 1-32 ASCII letters or digits. Examples: 123, A, a, A01 and 12A. The limit is 32 characters, not the numeric value 32. Suggestions include 001 -> 002, A99 -> A100 and Z -> AA. Duplicate labels are allowed.
 
@@ -31,11 +32,11 @@ Labels contain 1-32 ASCII letters or digits. Examples: 123, A, a, A01 and 12A. T
 - Move with the mouse: click the callout to select it, then drag the blue grip at the label center. The whole leader previews continuously and the point on the part stays fixed. Click the new position to finish, or press Esc to cancel. No command is needed. One Undo restores the label and leader together.
 - BHXG: select a callout, type its replacement label at the command line and confirm. The leader gap is recalculated. A copied callout can be edited independently.
 - BHYD: select a callout, move the mouse to preview the whole leader, then click the new label center. The target on the part stays fixed. Esc cancels the move.
-- BHSZ: set label height, horizontal landing length, text gap, confirmation key and weight. Press Enter at a setting to keep its value. New English labels use Arial Regular by default.
+- BHSZ: set label height, landing length, gap, BHXG edit confirmation key and weight. Continuous BH always accepts Space/Enter. New English labels use Arial Regular by default.
 - BHJC: select existing callouts and choose Bold or Regular. Selected labels are changed to Arial; leader lineweight stays unchanged.
 - BHVER: show the edition, AutoCAD version, preview-module status and Arial font lookup.
 - BHHELP: display command help.
-- Esc cancels the current operation. At the first or second point prompt, Enter finishes or cancels the callout. Use U or Ctrl+Z to undo a completed operation.
+- Exit BH with Esc before editing existing labels. At its second point prompt, Enter cancels the unfinished leader and waits for another target. Esc while placing or moving an unfinished preview cancels it.
 
 Double-clicking a label uses AutoCAD's built-in attribute editor. Finish with its normal OK/Close action; the leader gap then updates. The MOVE command moves the whole callout. Existing PatentLabel blocks are supported; exploded objects are not linked. These features require the matching managed DLL. If no blue grip appears, check that AutoCAD's GRIPS setting is enabled.
 
@@ -50,7 +51,7 @@ Double-clicking a label uses AutoCAD's built-in attribute editor. Finish with it
 
 ## Trial checklist
 
-Try a blank drawing first. Check startup/new-drawing loading, both click positions, preview retention, accepting 1, Space-to-repeat, letters, attribute-grip movement, BHYD preview, copied-callout independence, one-step undo, and saving/reopening a DWG.
+Try a blank drawing first. Check startup/new-drawing loading, preview, click-only continuous numbering, typed letters/digits plus Space, Esc retaining the final label, cancelling an unfinished preview, blue-grip movement, copied-callout independence, per-callout undo and save/reopen.
 
 The 2014 and 2019 packages are compiled against their supported APIs but need testing in those actual releases. Core Console checks on 2026 do not establish compatibility with another AutoCAD release or prove desktop mouse behavior. An English Windows/AutoCAD desktop still needs user verification.
 

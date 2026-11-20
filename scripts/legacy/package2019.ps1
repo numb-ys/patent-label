@@ -11,7 +11,7 @@ $project = Join-Path $projectRoot 'src\PatentLabel.UI2019\PatentLabel.UI2019.csp
 if ($LASTEXITCODE -ne 0) { throw 'AutoCAD 2019 module build failed.' }
 
 $stageRoot = Join-Path $projectRoot ('artifacts\package2019-' + [guid]::NewGuid().ToString('N'))
-$package = Join-Path $stageRoot 'PatentLabel-AutoCAD2019-0.3.2'
+$package = Join-Path $stageRoot 'PatentLabel-AutoCAD2019-0.4.0'
 $bundle = Join-Path $package 'PatentLabel2019.bundle'
 $contents = Join-Path $bundle 'Contents\Windows'
 New-Item -ItemType Directory -Path $contents -Force | Out-Null
@@ -29,7 +29,7 @@ foreach ($extension in @('.pdf','.txt')) {
     if (-not (Test-Path -LiteralPath $guidePath)) { throw 'Build the 2019 quick-start PDF and text with create_quickstart2014.py --year 2019 first.' }
     Copy-Item -LiteralPath $guidePath -Destination $package
 }
-$archive = Join-Path $projectRoot 'dist\PatentLabel-AutoCAD2019-0.3.2-zh-CN.zip'
+$archive = Join-Path $projectRoot 'dist\PatentLabel-AutoCAD2019-0.4.0-zh-CN.zip'
 Copy-Item -LiteralPath (Join-Path $projectRoot 'LICENSE') -Destination $package
 Copy-Item -LiteralPath (Join-Path $projectRoot 'THIRD_PARTY_NOTICES.md') -Destination $package
 New-Item -ItemType Directory -Path (Split-Path -Parent $archive) -Force | Out-Null

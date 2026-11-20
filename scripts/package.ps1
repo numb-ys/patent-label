@@ -20,9 +20,9 @@ foreach ($requiredPath in @($sourcePath, $readmePath, $uiDllPath, $checklistPath
 }
 
 $outputDirectory = Join-Path $projectRoot 'dist'
-$archivePath = Join-Path $outputDirectory 'PatentLabel-AutoCAD2026-0.3.2-zh-CN.zip'
+$archivePath = Join-Path $outputDirectory 'PatentLabel-AutoCAD2026-0.4.0-zh-CN.zip'
 $stagingDirectory = Join-Path ([System.IO.Path]::GetTempPath()) ('PatentLabel-package-' + [guid]::NewGuid().ToString('N'))
-$packageDirectory = Join-Path $stagingDirectory 'PatentLabel-0.3.2'
+$packageDirectory = Join-Path $stagingDirectory 'PatentLabel-0.4.0'
 $packageSourceDirectory = Join-Path $packageDirectory 'src'
 $packageScriptsDirectory = Join-Path $packageDirectory 'scripts'
 $packageDeploymentDirectory = Join-Path $packageDirectory 'deployment'

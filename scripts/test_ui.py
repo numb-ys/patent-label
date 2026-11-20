@@ -23,7 +23,7 @@ def main():
     if args.english:
         dll = ROOT / "src/PatentLabel.English2026/bin/Release/net8.0-windows/PatentLabel.English2026.dll"
         source = ROOT / "build/english/2026/PatentLabel.lsp"
-        version = "0.3.2-en-2026"
+        version = "0.4.0-en-2026"
     tested_dll = output / f"PatentLabel.UI.{version}.dll"
     shutil.copy2(dll, tested_dll)
     shutil.copy2(source, output / source.name)

@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "0.3.2"
+VERSION = "0.4.0"
 YEARS = (2014, 2019, 2026)
 
 
@@ -21,7 +21,7 @@ def english_backend():
             return json.dumps(translations[literal], ensure_ascii=True)
         return match.group()
     source = re.sub(r'"(?:\\.|[^"\\])*"', translate, source)
-    source = source.replace("0.3.2", VERSION)
+    source = source.replace("0.4.0", VERSION)
     source = source.replace(";;; UTF-8. AutoCAD 2021+ with LISPSYS=1/2; verified host recorded in README.",
                             ";;; ASCII English source, compatible with legacy and Unicode AutoLISP engines.")
     source = source.replace("PATENT_LABEL_SIMHEI_", "PATENT_LABEL_ARIAL_").replace("PatentLabel.SimHeiWeight", "PatentLabel.EnglishWeight")
@@ -43,7 +43,7 @@ def prepare(year):
     if year == 2026:
         ui = (ROOT / "src/PatentLabel.UI/Interaction.cs").read_text(encoding="utf-8")
         original_namespace = "PatentLabel.UI"
-        original_version = "0.3.2"
+        original_version = "0.4.0"
     else:
         spec = importlib.util.spec_from_file_location("legacy_generator", ROOT / "scripts/legacy/prepare-sources.py")
         module = importlib.util.module_from_spec(spec)
@@ -59,7 +59,7 @@ def prepare(year):
         module.prepare(year)
         ui = (shared / f"src/PatentLabel.UI{year}/Interaction.cs").read_text(encoding="utf-8")
         original_namespace = f"PatentLabel.UI{year}"
-        original_version = f"0.3.2-{year}"
+        original_version = f"0.4.0-{year}"
     ui = ui.replace(original_namespace, namespace).replace(original_version, identity)
     ui = ui.replace("移动鼠标预览整条折线，点击数字中心位置 <取消本条>",
                     "Move to preview the leader; pick the label center <Cancel this callout>")

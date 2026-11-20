@@ -23,20 +23,21 @@ INSTALL = [
     "把收到的 ZIP 压缩包完整解压，打开解压后的文件夹。",
     "启动 AutoCAD 2014，打开一张空白图纸，结束当前命令或对话框。",
     "双击 Install2014.cmd。看到 Installed: PatentLabel AutoCAD 2014，即安装成功。",
-    "保存工作，退出并重新启动 CAD。看到“专利附图标号 0.3.2-2014 已加载”，即可使用。",
+    "保存工作，退出并重新启动 CAD。看到“专利附图标号 0.4.0-2014 已加载”，即可使用。",
 ]
 USE = [
     "在 CAD 命令行输入 BH，按回车。",
     "第一次点击：点击要标记的零件位置，即引线指向点。",
     "移动鼠标，预览整条折线和编号；第二次点击：确定编号中心的位置。",
-    "首条默认编号为 1，直接按空格或回车确认；也可先输入其它编号再确认。本条完成后，命令结束。",
-    "再按一次空格，开始下一条标号，默认编号自动递增。",
+    "第二次点击即按建议编号放好当前标号，首条默认 1。直接点下一处零件位置，再点编号位置，可连续递增标号。",
+    "需要改号时，输入数字或字母，按空格或回车，然后直接点击下一处零件位置。",
+    "按 Esc 结束，保留已放好的标号；只点第一下时，Esc 取消尚未完成的引线。",
 ]
 COMMANDS = [
     ("修改编号", "输入 BHXG，点选标号，在命令行输入新编号，按空格确认；引线间隙同步调整。"),
     ("移动编号", "单击数字选中标号，拖动数字中心的蓝色夹点，整条引线实时预览；点击确定，零件端不动。无需输入命令。"),
-    ("调整设置", "输入 BHSZ，可设置字高、折线长度、文字间隙、确认键及加粗状态。"),
-    ("取消与撤销", "Esc 取消当前操作；U 或 Ctrl+Z 撤销已完成的操作。"),
+    ("调整设置", "BHSZ 设置字高、折线长度、文字间隙、BHXG 改号确认键及加粗状态。"),
+    ("退出与撤销", "Esc 退出连续标号；退出后 U 或 Ctrl+Z 逐条撤销。移动已有编号时 Esc 取消移动。"),
     ("双击改字", "双击编号，用 CAD 自带属性窗口修改并关闭，引线间隙同步调整。BHYD 也可用来移动编号。"),
 ]
 PROBLEMS = [
@@ -71,12 +72,12 @@ def main(year=2014):
     def steps(items):
         return [p(f"{index}. {text}") for index, text in enumerate(items, 1)]
 
-    story = [p(TITLE, title), p("适用 Windows 完整版 AutoCAD 2014，32 位或 64 位。版本 0.3.2-2014。请先在空白图纸中试用。", intro)]
+    story = [p(TITLE, title), p("适用 Windows 完整版 AutoCAD 2014，32 位或 64 位。版本 0.4.0-2014。请先在空白图纸中试用。", intro)]
     story += [p("一 首次安装", heading)] + steps(INSTALL)
     story += [p("安装只做一次。以后启动 CAD、打开或新建图纸均自动加载，无需逐张图纸重新 APPLOAD。", note)]
     story += [p("二 开始标号", heading)] + steps(USE)
-    story += [p("两次空格分开按：第一次确认当前标号，第二次开始下一条。", note)]
-    story += [p("编号可用 123、A、A01 等，最多 32 个字符。新标号默认黑体、不加粗。如果期间执行过其它 CAD 命令，重新输入 BH 开始标号。", small)]
+    story += [p("连续点击无需空格；输入编号后按一次空格即可继续。Esc 退出。", note)]
+    story += [p("编号可用 123、A、A01 等，最多 32 个字符。新标号默认黑体、不加粗。退出连续标号后，可修改已有标号。", small)]
     story += [p("三 修改与常用操作", heading)]
     rows = [[p(name, label), p(text, cell)] for name, text in COMMANDS]
     table = Table(rows, colWidths=[29*mm, 143*mm], hAlign="LEFT")
@@ -104,15 +105,15 @@ def main(year=2014):
     if len(pages) != 1:
         raise RuntimeError(f"Quick-start must be one readable page, got {len(pages)}")
     extracted = pages[0].extract_text()
-    for required in ["Install2014.cmd", "BHXG", "BHSZ", "BHVER", "Uninstall2014.cmd", "自动加载", "两次空格"]:
+    for required in ["Install2014.cmd", "BHXG", "BHSZ", "BHVER", "Uninstall2014.cmd", "自动加载", "连续点击"]:
         assert required.replace("2014", str(year)) in extracted, required
     shutil.copy2(destination, legacy / "先看这里.pdf")
 
-    lines = [TITLE, "", "适用 Windows 完整版 AutoCAD 2014，32 位或 64 位。版本 0.3.2-2014。", "请先在空白图纸中试用。", "", "一、首次安装"]
+    lines = [TITLE, "", "适用 Windows 完整版 AutoCAD 2014，32 位或 64 位。版本 0.4.0-2014。", "请先在空白图纸中试用。", "", "一、首次安装"]
     lines += [f"{index}. {text}" for index, text in enumerate(INSTALL, 1)]
     lines += ["", "安装只做一次。以后启动 CAD、打开或新建图纸均自动加载，无需逐张图纸重新 APPLOAD。", "", "二、开始标号"]
     lines += [f"{index}. {text}" for index, text in enumerate(USE, 1)]
-    lines += ["", "两次空格分开按：第一次确认当前标号，第二次开始下一条。", "编号可用 123、A、A01 等，最多 32 个字符。默认黑体、不加粗。", "如果期间执行过其它 CAD 命令，重新输入 BH 开始标号。", "", "三、修改与常用操作"]
+    lines += ["", "连续点击无需空格；输入编号后按一次空格即可继续。Esc 退出。", "编号可用 123、A、A01 等，最多 32 个字符。默认黑体、不加粗。", "退出连续标号后，可修改已有标号。", "", "三、修改与常用操作"]
     lines += [f"{name}：{text}" for name, text in COMMANDS]
     lines += ["", "四、遇到问题"] + PROBLEMS
     lines += ["", "不再试用时：打开 CAD 2014 图纸，运行 Uninstall2014.cmd，然后重启 CAD。", "", "试用提示：本包尚待 CAD 2014 实机验证，请将异常情况反馈给发送人。"]

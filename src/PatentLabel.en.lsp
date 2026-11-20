@@ -1,11 +1,11 @@
-;;; PatentLabel 0.3.2 - one callout per command, repeated by CAD's native Space/Enter.
+;;; PatentLabel 0.4.0 - continuous two-click callouts, keyboard labels or next target clicks.
 ;;; ASCII English source, compatible with legacy and Unicode AutoLISP engines.
 ;;; Optional .NET UI supplies native drag preview; editing uses the command-line backend.
 ;;; No changes to OSNAP/UCS/security settings or global double-click bindings.
 
 (defun bh:ui-available-p ()
   (and (member "BH:UI-READY" (atoms-family 1 '("BH:UI-READY")))
-       (equal (bh:ui-ready) "0.3.2")))
+       (equal (bh:ui-ready) "0.4.0")))
 
 (defun bh:clear-preview ()
   (if (member "BH:UI-PREVIEW-CLEAR" (atoms-family 1 '("BH:UI-PREVIEW-CLEAR")))
@@ -121,6 +121,30 @@
       (setq done T)
       (prompt "\nUse 1-32 letters or digits, for example 123, A or A01. Empty labels and spaces are not allowed.")))
   value)
+
+;;; Native mixed input preserves OSNAP/UCS. Bit 128 gives identifiers priority over
+;;; direct-distance input, so 123/001/A01 are strings and a picked point is a list.
+(defun bh:read-number-or-target (suggestion target center settings / value done)
+  (while (not done)
+    (initget 128)
+    (setq awaiting-native-input T)
+    (setq value
+      (getpoint
+        (strcat "\nCurrent label <" suggestion ">: type a replacement then Space/Enter, or click the next leader target; Esc finishes: ")))
+    (setq awaiting-native-input nil)
+    (cond
+      ((or (null value) (equal value "") (listp value)) (setq done T))
+      ((not (bh:identifier-p value))
+        (prompt "\nUse 1-32 letters or digits, for example 123, A or A01. Empty labels and spaces are not allowed."))
+      ((not (bh:geometry (mapcar '- target center) value
+                         (nth 0 settings) (nth 1 settings) (nth 2 settings)))
+        (prompt "\nThe new label would overlap the target. Type a shorter label, or press Space to keep the current one."))
+      (T (setq done T))))
+  value)
+
+(defun bh:remember-number (number)
+  (setq bh:next (bh:increment number))
+  (if (> (strlen bh:next) 32) (setq bh:next nil)))
 
 (defun bh:require (value message)
   (if (not value) (progn (prompt (strcat "\n" message)) (exit)))
@@ -328,8 +352,8 @@
   (bh:require (bh:record-write (entmod data)) "Cannot move the label attribute.")
   (bh:replace-number entity (cdr (assoc 1 data))))
 
-;;; A transaction is opened only after all interactive input is complete.
-;;; Its caller binds undo-open locally so the error handler can roll back safely.
+;;; A callout's placement and optional number replacement share one undo group.
+;;; The caller binds undo-open locally so cancellation can close or roll back it.
 (defun bh:begin-undo ()
   ; AutoCAD's automatic command group can already set bit 8 here.
   ; Explicit Begin is required to split repeated labels into separate groups.
@@ -358,17 +382,39 @@
     (prompt (strcat "\nCallout not completed: " message)))
   (princ))
 
-(defun c:BH (/ *error* undo-open undo-dirty target center number settings points running suggestion)
-  (setq *error* bh:on-error running T settings (bh:settings)
-        suggestion (if (bh:identifier-p bh:next) bh:next "1"))
-  (prompt "\nOne callout: target point -> label position -> label -> confirm to finish. Press Space again to repeat BH.")
-  (while running
-    (initget "Settings")
-    (setq target (getpoint "\nPick leader target point [Settings] <Finish>: "))
+;;; A cancelled point preview rolls back only that unfinished placement. A placed
+;;; default is already a complete callout: Esc closes its undo group and keeps it.
+(defun bh:on-continuous-error (message / cancelled)
+  (setq cancelled (or awaiting-native-input
+                     (wcmatch (strcase message) "*CANCEL*,*QUIT*,*BREAK*")))
+  (bh:clear-preview)
+  (if undo-open
+    ;; During mixed input the default is complete and no edits are in flight.
+    ;; Preserve it even when the host's localized cancellation text is unknown.
+    (if keep-on-cancel
+      (progn (bh:end-undo) (bh:remember-number number))
+      (progn (bh:rollback) (setq bh:next previous-next))))
+  (redraw)
+  (if (not cancelled) (prompt (strcat "\nCallout not completed: " message)))
+  (princ))
+
+(defun c:BH (/ *error* undo-open undo-dirty target center number settings points suggestion
+              entity response keep-on-cancel previous-next awaiting-native-input)
+  (setq *error* bh:on-continuous-error settings (bh:settings))
+  (prompt "\nContinuous callouts: target -> label center; type a label then Space, or click the next target. Esc finishes and keeps placed callouts.")
+  (while T
+    (setq suggestion (if (bh:identifier-p bh:next) bh:next "1"))
+    (if (null target)
+      (progn
+        (initget "Settings")
+        (setq awaiting-native-input T
+              target (getpoint "\nPick leader target [Settings]; Esc finishes: ")
+              awaiting-native-input nil)))
     (cond
-      ((null target) (setq running nil))
-      ((equal target "Settings") (c:BHSZ) (setq settings (bh:settings)))
+      ((null target) nil)
+      ((equal target "Settings") (c:BHSZ) (setq settings (bh:settings) target nil))
       (T
+        (setq previous-next bh:next keep-on-cancel nil number suggestion)
         (if (bh:ui-available-p)
           (progn
             (bh:begin-undo)
@@ -376,10 +422,11 @@
             (setq center (bh:point-result
               (bh:ui-place target suggestion
                            (nth 0 settings) (nth 1 settings) (nth 2 settings)))))
-          (setq center (getpoint target "\nPick label center <Cancel this callout>: ")))
+          (setq awaiting-native-input T
+                center (getpoint target "\nPick label center <Cancel this callout>: ")
+                awaiting-native-input nil))
         (if center
           (progn
-            (setq number (bh:read-number suggestion))
             (if (not undo-open) (bh:begin-undo))
             (bh:ensure-resources)
             (setq points (bh:geometry
@@ -388,15 +435,22 @@
                     number (nth 0 settings) (nth 1 settings) (nth 2 settings)))
             (if points
               (progn
-                (bh:make-label target center number settings)
+                (setq entity (bh:make-label target center number settings) keep-on-cancel T)
+                (bh:clear-preview)
+                (setq response (bh:read-number-or-target number target center settings))
+                (if (and (eq (type response) 'STR) (not (equal response "")))
+                  (progn
+                    (setq keep-on-cancel nil)
+                    (if (not (equal response number)) (bh:replace-number entity response))
+                    (setq number response)))
                 (bh:end-undo)
-                (setq bh:next (bh:increment number))
-                (if (> (strlen bh:next) 32) (setq bh:next nil))
-                (setq running nil))
+                (bh:remember-number number)
+                (setq keep-on-cancel nil target (if (listp response) response nil)))
               (progn
                 (bh:rollback)
+                (setq target nil)
                 (prompt "\nThe label is too close to the target. No callout was created; pick again."))))
-          (progn (if undo-open (bh:rollback)) (setq running nil))))))
+          (progn (if undo-open (bh:rollback)) (setq target nil))))))
   (princ))
 
 (defun c:BHSZ (/ values height landing gap confirm weight)
@@ -409,7 +463,7 @@
   (setq gap (getreal (strcat "\nLeader-to-label gap <" (rtos (nth 2 values) 2 3) ">: ")))
   (initget "Space Enter")
   (setq confirm
-    (getkword (strcat "\nConfirmation key [Space/Enter] <"
+    (getkword (strcat "\nBHXG edit confirmation key [Space/Enter] <"
                      (if (bh:enter-only-p) "Enter" "Space") ">: ")))
   (initget "Bold Regular")
   (setq weight (getkword
@@ -493,14 +547,14 @@
   (princ))
 
 (defun c:BHHELP ()
-  (prompt "\nBH: create one callout. BHSZ: height/landing/gap/confirmation/weight. BHXG: edit label. BHJC: change label font and weight.")
-  (prompt "\nConfirm the label to finish. Press Space/Enter again to repeat BH with the next suggested label. Use U at the command prompt to undo.")
+  (prompt "\nBH: continuous callouts. BHSZ: height/landing/gap/BHXG confirmation/weight. BHXG: edit label. BHJC: change font and weight.")
+  (prompt "\nThe second click places the label. Type a replacement then Space/Enter, or click the next target. Esc finishes; U undoes one callout at the command prompt.")
   (prompt "\nThe second point is the label center. No arrowhead; the leader bends left/right automatically. Uses the current UCS and space.")
   (prompt "\nSelect a callout and drag its blue label-center grip for live leader preview with a fixed target. BHYD is also available.")
   (princ))
 
 (bh:sync-ui)
-(prompt "\nPatentLabel 0.3.2 loaded (English). Type BH to start, BHSZ for settings, BHHELP for help.")
+(prompt "\nPatentLabel 0.4.0 loaded (English). Type BH to start, BHSZ for settings, BHHELP for help.")
 (if (bh:ui-available-p)
   (prompt "\nFull leader preview is enabled. Use BHXG to edit labels at the command line.")
   (prompt "\nBasic mode. NETLOAD the matching PatentLabel assembly to enable full leader preview."))

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.0 - Continuous click or type workflow
+
+- BH stays active until Esc. Click the next target immediately after placing a label to accept the suggested number and start another leader.
+- Optionally type digits/letters and press Space/Enter, then click the next target directly. A blank Space accepts the default and continues.
+- The second click places a complete default label. Esc keeps it; Esc after only the target click cancels that unfinished preview.
+- Creation and an optional number replacement share one undo group per callout. Existing grip movement and native text editing remain available after leaving BH.
+- Continuous BH always accepts Space/Enter; BHSZ confirmation-key preference applies to BHXG editing.
+- Updated all six language/year packages and guides.
+
+Validation uses native AutoCAD 2026 console input outside SCRIPT macro grouping, including 20 successive click-only callouts, numeric/letter input, cancel, per-callout undo with Auto on/off and save/reopen. Actual 2014/2019 desktop testing is still required.
+
 ## 0.3.2 - Native live label grip
 
 - Select a callout normally and drag the blue grip at its label center. The full leader previews continuously with a fixed target; no typed command is needed.

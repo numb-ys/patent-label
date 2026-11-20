@@ -35,14 +35,14 @@ def main():
     def footer(canvas, doc):
         canvas.setFont("Helvetica", 8)
         canvas.setFillColor(colors.HexColor("#555555"))
-        canvas.drawString(19*mm, 11.5*mm, "PatentLabel 0.3.2 English preview | AutoCAD 2014 / 2019 / 2026")
+        canvas.drawString(19*mm, 11.5*mm, "PatentLabel 0.4.0 English preview | AutoCAD 2014 / 2019 / 2026")
         canvas.drawRightString(A4[0]-19*mm, 11.5*mm, str(doc.page))
     document = SimpleDocTemplate(str(destination), pagesize=A4, leftMargin=19*mm, rightMargin=19*mm,
                                   topMargin=16*mm, bottomMargin=20*mm, title="PatentLabel English user guide", author="numb-ys")
     document.build(story, onFirstPage=footer, onLaterPages=footer)
     reader = PdfReader(str(destination))
     extracted = "\n".join(page.extract_text() for page in reader.pages)
-    for value in ("Install.cmd", "Uninstall.cmd", "BHXG", "BHVER", "Space again", "2014", "2019", "2026"):
+    for value in ("Install.cmd", "Uninstall.cmd", "BHXG", "BHVER", "next part", "Esc", "2014", "2019", "2026"):
         assert value in extracted, value
     print(f"{destination}: {len(reader.pages)} pages")
 

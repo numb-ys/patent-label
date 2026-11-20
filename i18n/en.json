@@ -48,11 +48,19 @@
   "\nBH：单次标号；BHSZ：字高/折线/间隙/确认键/字重；BHXG：改号；BHJC：修改已有标号字重。": "\nBH: create one callout. BHSZ: height/landing/gap/confirmation/weight. BHXG: edit label. BHJC: change label font and weight.",
   "\n确认编号即结束命令；再次空格/回车由 CAD 重复 BH，仍保留下一编号建议。U 在 CAD 命令行撤销。": "\nConfirm the label to finish. Press Space/Enter again to repeat BH with the next suggested label. Use U at the command prompt to undo.",
   "\n数字点击位置为中心；默认无箭头，左右自动折线；使用当前 UCS 平面和当前空间。": "\nThe second point is the label center. No arrowhead; the leader bends left/right automatically. Uses the current UCS and space.",
-  "\n专利附图标号 0.3.2 已加载。输入 BH 开始，BHSZ 设置，BHHELP 查看帮助。": "\nPatentLabel 0.3.2 loaded (English). Type BH to start, BHSZ for settings, BHHELP for help.",
+  "\n专利附图标号 0.4.0 已加载。输入 BH 开始，BHSZ 设置，BHHELP 查看帮助。": "\nPatentLabel 0.4.0 loaded (English). Type BH to start, BHSZ for settings, BHHELP for help.",
   "\n整条折线随鼠标预览已启用；BHXG 在命令行修改编号。": "\nFull leader preview is enabled. Use BHXG to edit labels at the command line.",
   "\n当前为基础模式；NETLOAD 加载配套 PatentLabel.UI.dll 可启用整条折线预览。": "\nBasic mode. NETLOAD the matching PatentLabel assembly to enable full leader preview.",
   "无法移动编号文字。": "Cannot move the label attribute.",
   "\n选择要移动编号位置的标号（引线或数字）: ": "\nSelect a callout to reposition (leader or label): ",
   "\n点取新的编号中心位置 <取消>: ": "\nPick the new label center <Cancel>: ",
-  "\n单击标号，拖动编号中心的蓝色夹点，整条引线实时跟随，零件端不动；BHYD 也可移动编号。": "\nSelect a callout and drag its blue label-center grip for live leader preview with a fixed target. BHYD is also available."
+  "\n单击标号，拖动编号中心的蓝色夹点，整条引线实时跟随，零件端不动；BHYD 也可移动编号。": "\nSelect a callout and drag its blue label-center grip for live leader preview with a fixed target. BHYD is also available.",
+  "\n当前编号 <": "\nCurrent label <",
+  ">：输入新编号后空格/Enter 确认，或直接点下一处指向点；Esc 结束: ": ">: type a replacement then Space/Enter, or click the next leader target; Esc finishes: ",
+  "\n新编号会遮挡引线指向点，请输入较短编号，或按空格保留当前编号。": "\nThe new label would overlap the target. Type a shorter label, or press Space to keep the current one.",
+  "\n连续标号：点指向点 → 点编号位置；可输入编号后空格确认，或直接点下一处；Esc 结束并保留已放好的标号。": "\nContinuous callouts: target -> label center; type a label then Space, or click the next target. Esc finishes and keeps placed callouts.",
+  "\n点取引线指向点 [设置(Settings)]，Esc 结束: ": "\nPick leader target [Settings]; Esc finishes: ",
+  "\nBHXG 改号确认键 [空格或回车(Space)/仅回车(Enter)] <": "\nBHXG edit confirmation key [Space/Enter] <",
+  "\nBH：连续标号；BHSZ：字高/折线/间隙/改号确认键/字重；BHXG：改号；BHJC：修改已有标号字重。": "\nBH: continuous callouts. BHSZ: height/landing/gap/BHXG confirmation/weight. BHXG: edit label. BHJC: change font and weight.",
+  "\n第二次点击后编号已放好；输入新编号后空格/Enter 确认，或直接点下一处指向点；Esc 结束，退出后 U 逐条撤销。": "\nThe second click places the label. Type a replacement then Space/Enter, or click the next target. Esc finishes; U undoes one callout at the command prompt."
 }
